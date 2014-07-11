@@ -1,0 +1,28 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=95
+
+SERVICE_USE_PID=1
+SERVICE_WRITE_PID=1
+SERVICE_DAEMONIZE=1
+
+CONFIG=/etc/shadowsocks.json
+
+start() {
+	# Client Mode
+	# service_start /usr/bin/ss-local -c $CONFIG
+
+	# Proxy Mode
+	/usr/bin/ss-rules -c $CONFIG
+	service_start /usr/bin/ss-redir -c $CONFIG
+}
+
+stop() {
+	# Client Mode
+	# service_stop /usr/bin/ss-local
+
+	# Proxy Mode
+	service_stop /usr/bin/ss-redir
+	/etc/init.d/firewall restart>/dev/null 2>&1
+}
