@@ -11,18 +11,18 @@ CONFIG=/etc/shadowsocks.json
 
 start() {
 	# Client Mode
-	# service_start /usr/bin/ss-local -c $CONFIG
+	# service_start /usr/sbin/ss-local -c $CONFIG
 
 	# Proxy Mode
-	/usr/bin/ss-rules -c $CONFIG
-	service_start /usr/bin/ss-redir -c $CONFIG
+	/usr/sbin/ss-rules -c $CONFIG
+	service_start /usr/sbin/ss-redir -c $CONFIG
 }
 
 stop() {
 	# Client Mode
-	# service_stop /usr/bin/ss-local
+	# service_stop /usr/sbin/ss-local
 
 	# Proxy Mode
-	service_stop /usr/bin/ss-redir
+	service_stop /usr/sbin/ss-redir
 	/etc/init.d/firewall restart>/dev/null 2>&1
 }
