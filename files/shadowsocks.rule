@@ -1,17 +1,18 @@
 #!/bin/sh
 
-# Get parameters
+# Get arguments
 getopts :c: opt && CONFIG=$OPTARG
 getopts :i: opt && IGNORE=$OPTARG
-[ -z $CONFIG ] || [ -z $IGNORE ] || [ ! -f $CONFIG ] || [ ! -f $IGNORE ] && exit 1
-server=$(cat $CONFIG |\
-awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/server\042/){print $(i+1)}}}' |\
-sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
-local_port=$(cat $CONFIG |\
-awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/local_port\042/){print $(i+1)}}}' |\
-sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
+[ -z $CONFIG ] || [ -z $IGNORE ] || [ ! -f $CONFIG ] || [ ! -f $IGNORE ] && {
+	echo "Argument missing or configuration file not found."
+	exit 1
+}
+server=$(awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/server\042/){print $(i+1)}}}' \
+$CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
+local_port=$(awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/local_port\042/){print $(i+1)}}}' \
+$CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
 [ -z $server ] || [ -z $local_port ] && {
-	echo "Parameter is invalid, please check the configuration file."
+	echo "Invalid argument, please check configuration file."
 	exit 1
 }
 
