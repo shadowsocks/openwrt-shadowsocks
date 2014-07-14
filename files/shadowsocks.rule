@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Get parameters
+getopts :c: opt && CONFIG=$OPTARG
+getopts :i: opt && IGNORE=$OPTARG
+[ -z $CONFIG ] || [ -z $IGNORE ] || [ ! -f $CONFIG ] || [ ! -f $IGNORE ] && exit 1
+server=$(cat $CONFIG |\
+awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/server\042/){print $(i+1)}}}' |\
+sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
+local_port=$(cat $CONFIG |\
+awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/local_port\042/){print $(i+1)}}}' |\
+sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
+[ -z $server ] || [ -z $local_port ] && {
+	echo "Parameter is invalid, please check the configuration file."
+	exit 1
+}
+
+# Create a new chain named SHADOWSOCKS
+iptables -t nat -N SHADOWSOCKS
+
+# Ignore your shadowsocks server's addresses
+iptables -t nat -A SHADOWSOCKS -d $server -j RETURN
+
+# Ignore LAN IP address
+iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
+iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
+
+# Ignore Config IP address
+while read -r ip; do
+	[ ! -z "$ip" ] && iptables -t nat -A SHADOWSOCKS -d $ip -j RETURN
+done < $IGNORE
+
+# Anything else should be redirected to shadowsocks's local port
+iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port
+
+# Apply the rules
+iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+
+exit 0

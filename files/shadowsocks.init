@@ -7,15 +7,15 @@ SERVICE_USE_PID=1
 SERVICE_WRITE_PID=1
 SERVICE_DAEMONIZE=1
 
-CONFIG=/etc/shadowsocks.json
+CONFIG=/etc/shadowsocks/config.json
+IGNORE=/etc/shadowsocks/ignore.list
 
 start() {
 	# Client Mode
 	# service_start /usr/sbin/ss-local -c $CONFIG
 
 	# Proxy Mode
-	/usr/sbin/ss-rules -c $CONFIG
-	service_start /usr/sbin/ss-redir -c $CONFIG
+	/usr/sbin/ss-rules -c $CONFIG -i $IGNORE && service_start /usr/sbin/ss-redir -c $CONFIG
 }
 
 stop() {
