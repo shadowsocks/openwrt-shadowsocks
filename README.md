@@ -1,7 +1,9 @@
-shadowsocks 的 OpenWrt Makefile
+OpenWrt's ShadowSocks Makefile
 ===
 
-默认从 [shadowsocks-libev][1] 下载最新源码进行编译
+编译时默认从 [shadowsocks-libev][1] 下载最新源码
+
+添加 **ss-rules** 使国内流量不走代理
 
 使用说明
 ---
