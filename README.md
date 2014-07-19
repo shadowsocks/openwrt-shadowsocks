@@ -18,8 +18,11 @@ rm dl/master.zip
 make package/network/services/shadowsocks/compile V=99
 ```
 
-默认使用透明代理模式启动
-通过修改`/etc/init.d/shadowsocks`调整启动模式
+默认使用透明代理模式启动 通过修改`/etc/init.d/shadowsocks`调整启动模式
+
+ss-redir 配置: `/etc/shadowsocks/config.json`
+
+ss-rules 配置: `/etc/shadowsocks/ignore.list`
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
