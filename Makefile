@@ -55,14 +55,14 @@ ifeq ($(BUILD_VARIANT),polarssl)
 endif
 
 define Package/shadowsocks-libev/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{local,redir} $(1)/usr/sbin
+	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/sbin/ss-rules
 	$(INSTALL_DIR) $(1)/etc/shadowsocks
 	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
 	$(INSTALL_DATA) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/shadowsocks.init $(1)/etc/init.d/shadowsocks
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-{local,redir} $(1)/usr/sbin
-	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/sbin/ss-rules
 endef
 
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
