@@ -5,6 +5,8 @@ OpenWrt's ShadowSocks Makefile
 
 添加 **ss-rules** 使国内流量不走代理
 
+[预编译 ipk 下载][2]
+
 使用说明
 ---
 
@@ -26,3 +28,4 @@ ss-rules 配置: `/etc/shadowsocks/ignore.list`
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
+  [2]: https://drive.google.com/folderview?id=0B2_XcmDgxYqrSUZwV2RRQ3ViUWs#list
