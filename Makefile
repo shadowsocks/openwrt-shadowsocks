@@ -39,13 +39,13 @@ define Package/shadowsocks-libev-polarssl
 endef
 
 define Package/shadowsocks-libev/description
-	Shadowsocks-libev is a lightweight secured scoks5 proxy for embedded devices and low end boxes.
+Shadowsocks-libev is a lightweight secured scoks5 proxy for embedded devices and low end boxes.
 endef
 
 Package/shadowsocks-libev-polarssl/description = $(Package/shadowsocks-libev/description)
 
 define Package/shadowsocks-libev/conffiles
-	/etc/shadowsocks/config.json
+/etc/shadowsocks/config.json
 endef
 
 Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
