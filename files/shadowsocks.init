@@ -23,6 +23,5 @@ stop() {
 	# service_stop /usr/sbin/ss-local
 
 	# Proxy Mode
-	service_stop /usr/sbin/ss-redir
-	/etc/init.d/firewall restart>/dev/null 2>&1
+	service_stop /usr/sbin/ss-redir && /etc/init.d/firewall restart>/dev/null 2>&1
 }
