@@ -46,6 +46,7 @@ Package/shadowsocks-libev-polarssl/description = $(Package/shadowsocks-libev/des
 
 define Package/shadowsocks-libev/conffiles
 /etc/shadowsocks/config.json
+/etc/shadowsocks/ignore.list
 endef
 
 Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
@@ -60,7 +61,7 @@ define Package/shadowsocks-libev/install
 	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/sbin/ss-rules
 	$(INSTALL_DIR) $(1)/etc/shadowsocks
 	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
-	$(INSTALL_DATA) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
+	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/shadowsocks.init $(1)/etc/init.d/shadowsocks
 endef
