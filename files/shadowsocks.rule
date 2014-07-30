@@ -33,7 +33,8 @@ iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
 iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
 
 # Ignore Config IP address
-while read -r ip; do
+while read -r line; do
+	ip=$(echo $line | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 	[ ! -z "$ip" ] && iptables -t nat -A SHADOWSOCKS -d $ip -j RETURN
 done < $IGNORE
 
