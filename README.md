@@ -8,7 +8,7 @@ OpenWrt's ShadowSocks Makefile
 
  - 添加 `ss-rules` 可设置 `ignore.list` 中的 IP 不走代理
 
- - 移除不常用的 `ss-tunnel` 可修改 `Makefile` 重新添加
+ - 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
 
  - 修改安装位置为 `/usr/sbin` 需先卸载已安装的其他版本
 
