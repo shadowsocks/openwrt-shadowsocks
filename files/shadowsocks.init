@@ -15,7 +15,8 @@ start() {
 	# service_start /usr/sbin/ss-local -c $CONFIG
 
 	# Proxy Mode
-	/usr/sbin/ss-rules -c $CONFIG -i $IGNORE && service_start /usr/sbin/ss-redir -c $CONFIG
+	/usr/sbin/ss-rules -c $CONFIG -i $IGNORE && \
+	service_start /usr/sbin/ss-redir -c $CONFIG
 }
 
 stop() {
@@ -23,5 +24,6 @@ stop() {
 	# service_stop /usr/sbin/ss-local
 
 	# Proxy Mode
-	service_stop /usr/sbin/ss-redir && /etc/init.d/firewall restart>/dev/null 2>&1
+	service_stop /usr/sbin/ss-redir && \
+	/etc/init.d/firewall restart>/dev/null 2>&1
 }
