@@ -17,7 +17,7 @@ $CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
 }
 
 # Create a new chain
-RULES="*nat\n:SHADOWSOCKS - [0:0]\n\
+BEGIN="*nat\n:SHADOWSOCKS - [0:0]\n\
 -A PREROUTING -p tcp -j SHADOWSOCKS\n\
 -A SHADOWSOCKS -d $server/32 -j RETURN\n\
 -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN\n\
@@ -30,13 +30,11 @@ RULES="*nat\n:SHADOWSOCKS - [0:0]\n\
 -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN\n"
 
 # Read the ignore list
-while read -r ip; do
-	[ ! -z "$ip" ] && RULES="$RULES-A SHADOWSOCKS -d $ip -j RETURN\n"
-done < $IGNORE
-
-RULES="$RULES-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port\nCOMMIT"
+RULES=$(awk '{print "-A SHADOWSOCKS -d " $0 " -j RETURN"}' $IGNORE)
 
 # Apply the rules
-echo -e $RULES | iptables-restore -n
+echo -e "$BEGIN$RULES\n\
+-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port\n\
+COMMIT" | iptables-restore -n
 
 exit 0
