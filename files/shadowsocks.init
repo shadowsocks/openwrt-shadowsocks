@@ -1,5 +1,4 @@
 #!/bin/sh /etc/rc.common
-# Copyright (C) 2006-2011 OpenWrt.org
 
 START=95
 
@@ -12,18 +11,18 @@ IGNORE=/etc/shadowsocks/ignore.list
 
 start() {
 	# Client Mode
-	# service_start /usr/sbin/ss-local -c $CONFIG
+	# service_start /usr/bin/ss-local -c $CONFIG
 
 	# Proxy Mode
-	/usr/sbin/ss-rules -c $CONFIG -i $IGNORE && \
-	service_start /usr/sbin/ss-redir -c $CONFIG
+	/usr/bin/ss-rules -c $CONFIG -i $IGNORE && \
+	service_start /usr/bin/ss-redir -c $CONFIG
 }
 
 stop() {
 	# Client Mode
-	# service_stop /usr/sbin/ss-local
+	# service_stop /usr/bin/ss-local
 
 	# Proxy Mode
-	service_stop /usr/sbin/ss-redir && \
+	service_stop /usr/bin/ss-redir && \
 	/etc/init.d/firewall restart>/dev/null 2>&1
 }

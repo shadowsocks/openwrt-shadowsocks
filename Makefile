@@ -65,9 +65,9 @@ ifeq ($(BUILD_VARIANT),polarssl)
 endif
 
 define Package/shadowsocks-libev/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{local,redir} $(1)/usr/sbin
-	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/sbin/ss-rules
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{local,redir} $(1)/usr/bin
+	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/bin/ss-rules
 	$(INSTALL_DIR) $(1)/etc/shadowsocks
 	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
 	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
@@ -78,8 +78,8 @@ endef
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
 
 define Package/shadowsocks-libev-extra/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-tunnel $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-tunnel $(1)/usr/bin
 endef
 
 Package/shadowsocks-libev-polarssl-extra/install = $(Package/shadowsocks-libev-extra/install)

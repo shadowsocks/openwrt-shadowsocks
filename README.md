@@ -10,8 +10,6 @@ OpenWrt's ShadowSocks Makefile
 
  - 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
 
- - 修改安装位置为 `/usr/sbin` 需先卸载已安装的其他版本
-
 编译说明
 ---
 
