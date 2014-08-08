@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Get arguments
+# Get variable
 getopts :c: opt && CONFIG=$OPTARG
 getopts :i: opt && IGNORE=$OPTARG
 [ -z $CONFIG ] || [ -z $IGNORE ] || [ ! -f $CONFIG ] || [ ! -f $IGNORE ] && {
@@ -16,32 +16,27 @@ $CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
 	exit 1
 }
 
-# Create a new chain named SHADOWSOCKS
-iptables -t nat -N SHADOWSOCKS
+# Create a new chain
+RULES="*nat\n:SHADOWSOCKS - [0:0]\n\
+-A PREROUTING -p tcp -j SHADOWSOCKS\n\
+-A SHADOWSOCKS -d $server/32 -j RETURN\n\
+-A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN\n\
+-A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN\n\
+-A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN\n\
+-A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN\n\
+-A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN\n\
+-A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN\n\
+-A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN\n\
+-A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN\n"
 
-# Ignore your shadowsocks server's addresses
-iptables -t nat -A SHADOWSOCKS -d $server -j RETURN
-
-# Ignore LAN IP address
-iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
-iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
-
-# Ignore Config IP address
-while read -r line; do
-	ip=$(echo $line | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-	[ ! -z "$ip" ] && iptables -t nat -A SHADOWSOCKS -d $ip -j RETURN
+# Read the ignore list
+while read -r ip; do
+	[ ! -z "$ip" ] && RULES="$RULES-A SHADOWSOCKS -d $ip -j RETURN\n"
 done < $IGNORE
 
-# Anything else should be redirected to shadowsocks's local port
-iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port
+RULES="$RULES-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port\nCOMMIT"
 
 # Apply the rules
-iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+echo -e $RULES | iptables-restore -n
 
 exit 0

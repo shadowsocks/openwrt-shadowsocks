@@ -33,49 +33,10 @@ OpenWrt's ShadowSocks Makefile
 
  - 默认使用透明代理模式启动 可编辑 `/etc/init.d/shadowsocks` 修改启动模式
 
- > ```
- > start() {
- >     # Client Mode
- >     # service_start /usr/sbin/ss-local -c $CONFIG
-
- >     # Proxy Mode
- >     /usr/sbin/ss-rules -c $CONFIG -i $IGNORE && service_start /usr/sbin/ss-redir -c $CONFIG
- > }
-
- > stop() {
- >     # Client Mode
- >     # service_stop /usr/sbin/ss-local
-
- >     # Proxy Mode
- >     service_stop /usr/sbin/ss-redir && /etc/init.d/firewall restart>/dev/null 2>&1
- > }
- > ```
-
  - ss-redir 配置文件: `/etc/shadowsocks/config.json`
-
- > ```
- > {
- >     "server": "127.0.0.1",
- >     "server_port": 443,
- >     "local_port": 1080,
- >     "password": "password",
- >     "timeout": 60,
- >     "method": "aes-256-cfb"
- > }
- > ```
 
  - ss-rules 配置文件: `/etc/shadowsocks/ignore.list`
 
- > ```
- > # 可使用注释
- > ; 0.0.0.0/7
- > # 14.0.0.0/8
- > - 14.0.12.0/22
- > # 生效部分
- > 14.192.60.0
- > 14.192.64.0/19
- > 27.98.208.0/20
- > ```
 
   [1]: https://github.com/madeye/shadowsocks-libev
   [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/
