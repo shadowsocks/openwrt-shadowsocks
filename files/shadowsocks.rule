@@ -1,23 +1,42 @@
 #!/bin/sh
 
-# Get variable
+# Get argument
 getopts :c: opt && CONFIG=$OPTARG
 getopts :i: opt && IGNORE=$OPTARG
-[ -z $CONFIG ] || [ -z $IGNORE ] || [ ! -f $CONFIG ] || [ ! -f $IGNORE ] && {
-	echo "Argument missing or configuration file not found."
+
+# Check argument
+[ -z $CONFIG ] || [ -z $IGNORE ] && {
+	echo "Argument missing!"
 	exit 1
 }
-server=$(awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/server\042/){print $(i+1)}}}' \
-$CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
-local_port=$(awk -F'[,:]' '{for(i=1;i<=NF;i++){if($i~/local_port\042/){print $(i+1)}}}' \
-$CONFIG | sed 's/\(.*\)"\(.*\)"\(.*\)/\2/g')
+
+# Check configuration files
+CC="$CONFIG $IGNORE"
+for C in $CC; do
+	[ ! -f $C ] && echo "$C not found." && exit 1
+done
+
+# Get variable
+eval $(awk -F'[,:]' '{
+	for (i=1; i<=NF; i++) {
+		if ($i ~ /server\042/) {
+			printf("server=%s\n", $(i+1))
+		}
+		if ($i ~ /local_port\042/) {
+			printf("local_port=%s\n", $(i+1))
+		}
+	}
+}' $CONFIG | tr -d '" ')
+
+# Check variable
 [ -z $server ] || [ -z $local_port ] && {
-	echo "Invalid argument, please check configuration file."
+	echo "Invalid variable, please check $CONFIG."
 	exit 1
 }
 
 # Create a new chain
-BEGIN="*nat\n:SHADOWSOCKS - [0:0]\n\
+BEGIN="*nat\n\
+:SHADOWSOCKS - [0:0]\n\
 -A PREROUTING -p tcp -j SHADOWSOCKS\n\
 -A SHADOWSOCKS -d $server/32 -j RETURN\n\
 -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN\n\
@@ -30,8 +49,9 @@ BEGIN="*nat\n:SHADOWSOCKS - [0:0]\n\
 -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN\n"
 
 # Read the ignore list
-RULES=$(awk '$0 ~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/ \
-{print "-A SHADOWSOCKS -d " $0 " -j RETURN"}' $IGNORE)
+RULES=$(awk '$1 ~ /^[0-9]{1,3}\.[0-9]{1,3}\./ {
+	printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)
+}' $IGNORE)
 
 # Apply the rules
 echo -e "$BEGIN$RULES\n\
