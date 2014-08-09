@@ -30,7 +30,8 @@ BEGIN="*nat\n:SHADOWSOCKS - [0:0]\n\
 -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN\n"
 
 # Read the ignore list
-RULES=$(awk '{print "-A SHADOWSOCKS -d " $0 " -j RETURN"}' $IGNORE)
+RULES=$(awk '$0 ~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/ \
+{print "-A SHADOWSOCKS -d " $0 " -j RETURN"}' $IGNORE)
 
 # Apply the rules
 echo -e "$BEGIN$RULES\n\
