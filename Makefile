@@ -81,6 +81,8 @@ Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install
 define Package/shadowsocks-libev-extra/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-tunnel $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/shadowsocks.extra $(1)/etc/init.d/shadowsocks
 endef
 
 Package/shadowsocks-libev-polarssl-extra/install = $(Package/shadowsocks-libev-extra/install)
