@@ -26,6 +26,10 @@ OpenWrt's ShadowSocks Makefile
 
  - 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
 
+   > 安装后 `ss-tunnel` 默认会转发 `127.0.0.1:5353` 至 `8.8.4.4:53`
+
+   > 相当于建立一个通过 `ShadowSocks` 服务器查询的本地 DNS 服务器
+
 编译说明
 ---
 
