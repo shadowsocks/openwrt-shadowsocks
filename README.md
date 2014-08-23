@@ -53,8 +53,13 @@ OpenWrt's ShadowSocks Makefile
 
  - ss-redir 配置文件: `/etc/shadowsocks/config.json`
 
- - ss-rules 配置文件: `/etc/shadowsocks/ignore.list`
+ - ss-rules [配置文件][3]: `/etc/shadowsocks/ignore.list`
+    > ```
+    > # update command:
+    > curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
+    > ```
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
   [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/
+  [3]: https://github.com/aa65535/openwrt-shadowsocks/blob/master/files/shadowsocks.list
