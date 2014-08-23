@@ -51,11 +51,11 @@ OpenWrt's ShadowSocks Makefile
 
  - 默认使用透明代理模式启动 可编辑 `/etc/init.d/shadowsocks` 修改启动模式
 
- - ss-redir 配置文件: `/etc/shadowsocks/config.json`
+ - shadowsocks 配置文件: `/etc/shadowsocks/config.json`
 
- - ss-rules [配置文件][3]: `/etc/shadowsocks/ignore.list`
+ - [Ignore List][3]: `/etc/shadowsocks/ignore.list`
     > ```
-    > # update command:
+    > # You can update ignore.list using this command:
     > curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
     > ```
 
