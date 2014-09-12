@@ -24,11 +24,13 @@ OpenWrt's ShadowSocks Makefile
 
  - 添加 `ss-rules` 可设置 `ignore.list` 中的 IP 不走代理
 
- - 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
+   > 支持 `ipset` 和 `iptables` 两种转发规则  
+   > 默认使用性能更好的 `ipset` 规则, 对不支持的设备使用 `iptables`  
 
-   > 安装后 `ss-tunnel` 默认会转发 `127.0.0.1:5353` 至 `8.8.4.4:53`
+- 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
 
-   > 相当于建立一个通过 `ShadowSocks` 服务器查询的本地 DNS 服务器
+   > 安装后 `ss-tunnel` 默认会转发 `127.0.0.1:5353` 至 `8.8.4.4:53`  
+   > 相当于建立一个通过 `ShadowSocks` 服务器查询的本地 DNS 服务器  
 
 编译说明
 ---
