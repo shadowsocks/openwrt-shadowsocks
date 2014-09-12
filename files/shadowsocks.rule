@@ -20,10 +20,10 @@ done
 eval $(awk -F'[,:]' '{
 	for (i=1; i<=NF; i++) {
 		if ($i ~ /server\042/) {
-			printf("server=%s\n", $(i+1))
+			printf("server=%s;", $(i+1))
 		}
 		if ($i ~ /local_port\042/) {
-			printf("local_port=%s\n", $(i+1))
+			printf("local_port=%s;", $(i+1))
 		}
 	}
 }' $CONFIG | tr -d '" ')
@@ -34,8 +34,8 @@ eval $(awk -F'[,:]' '{
 	exit 1
 }
 
-# Create a new chain
-BEGIN="*nat\n\
+# Set variable
+HEAD="*nat\n\
 :SHADOWSOCKS - [0:0]\n\
 -A PREROUTING -p tcp -j SHADOWSOCKS\n\
 -A SHADOWSOCKS -d $server/32 -j RETURN\n\
@@ -48,14 +48,51 @@ BEGIN="*nat\n\
 -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN\n\
 -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN\n"
 
+TAIL="\n\
+-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port\n\
+COMMIT"
+
+# Catch error codes
+ipset -X shadowsocks>/dev/null 2>&1
+RETV="$?"
+
+[ "$RETV" = 127 ] && {
+	# Use iptables
+	# Read the ignore list
+	BODY=$(awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ {
+		printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)
+	}' $IGNORE)
+
+	# Apply the rules
+	echo -e "$HEAD$BODY$TAIL" | iptables-restore -n
+
+	exit $?
+}
+
+# Set variable
+HEAD="create shadowsocks hash:net\n\
+add shadowsocks $server\n\
+add shadowsocks 0.0.0.0/8\n\
+add shadowsocks 10.0.0.0/8\n\
+add shadowsocks 127.0.0.0/8\n\
+add shadowsocks 169.254.0.0/16\n\
+add shadowsocks 172.16.0.0/12\n\
+add shadowsocks 192.168.0.0/16\n\
+add shadowsocks 224.0.0.0/4\n\
+add shadowsocks 240.0.0.0/4\n"
+
+# Use ipset
 # Read the ignore list
-RULES=$(awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ {
-	printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)
+BODY=$(awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ {
+	printf("add shadowsocks %s\n", $1)
 }' $IGNORE)
 
-# Apply the rules
-echo -e "$BEGIN$RULES\n\
--A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port\n\
-COMMIT" | iptables-restore -n
+# Restore the ipset
+echo -e "$HEAD$BODY" | ipset -R
 
-exit 0
+# Apply the rules
+iptables -t nat -A PREROUTING -p tcp \
+	-m set ! --match-set shadowsocks dst \
+	-j REDIRECT --to-port $local_port
+
+exit $?
