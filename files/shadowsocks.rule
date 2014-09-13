@@ -57,6 +57,7 @@ COMMIT"
 	}' $IGNORE)
 
 	# Apply the rules
+	/etc/init.d/firewall restart>/dev/null 2>&1
 	echo -e "$HEAD$BODY$TAIL" | iptables-restore -n
 
 	exit $?
@@ -80,10 +81,8 @@ add shadowsocks 240.0.0.0/4\n"
 		printf("add shadowsocks %s\n", $1)
 	}' $IGNORE)
 
-	# Restore the ipset
-	echo -e "$HEAD$BODY" | ipset -R
-
 	# Apply the rules
+	echo -e "$HEAD$BODY" | ipset -R && \
 	iptables -t nat -A PREROUTING -p tcp \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $local_port
