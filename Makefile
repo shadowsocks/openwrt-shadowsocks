@@ -31,7 +31,7 @@ define Package/shadowsocks-libev
 	DEPENDS:=+libopenssl
 endef
 
-Package/shadowsocks-libev-extra = $(Package/shadowsocks-libev)
+Package/shadowsocks-libev-spec = $(Package/shadowsocks-libev)
 
 define Package/shadowsocks-libev-polarssl
 	$(call Package/shadowsocks-libev/Default)
@@ -40,26 +40,30 @@ define Package/shadowsocks-libev-polarssl
 	DEPENDS:=+libpolarssl
 endef
 
-Package/shadowsocks-libev-polarssl-extra = $(Package/shadowsocks-libev-polarssl)
+Package/shadowsocks-libev-spec-polarssl = $(Package/shadowsocks-libev-polarssl)
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured scoks5 proxy for embedded devices and low end boxes.
 endef
 
+Package/shadowsocks-libev-spec/description = $(Package/shadowsocks-libev/description)
+
 Package/shadowsocks-libev-polarssl/description = $(Package/shadowsocks-libev/description)
 
-define Package/shadowsocks-libev-extra/description
-Shadowsocks-libev the ss-tunnel.
-endef
-
-Package/shadowsocks-libev-polarssl-extra/description = $(Package/shadowsocks-libev-extra/description)
+Package/shadowsocks-libev-spec-polarssl/description = $(Package/shadowsocks-libev/description)
 
 define Package/shadowsocks-libev/conffiles
+/etc/shadowsocks.json
+endef
+
+Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
+
+define Package/shadowsocks-libev-spec/conffiles
 /etc/shadowsocks/config.json
 /etc/shadowsocks/ignore.list
 endef
 
-Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
+Package/shadowsocks-libev-spec-polarssl/conffiles = $(Package/shadowsocks-libev-spec/conffiles)
 
 ifeq ($(BUILD_VARIANT),polarssl)
 	CONFIGURE_ARGS += --with-crypto-library=polarssl
@@ -67,27 +71,28 @@ endif
 
 define Package/shadowsocks-libev/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{local,redir} $(1)/usr/bin
-	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/bin/ss-rules
-	$(INSTALL_DIR) $(1)/etc/shadowsocks
-	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
-	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{local,redir,tunnel} $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks.json
 	$(INSTALL_BIN) ./files/shadowsocks.init $(1)/etc/init.d/shadowsocks
 endef
 
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
 
-define Package/shadowsocks-libev-extra/install
+define Package/shadowsocks-libev-spec/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-tunnel $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ss-{redir,tunnel} $(1)/usr/bin
+	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/bin/ss-rules
+	$(INSTALL_DIR) $(1)/etc/shadowsocks
+	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
+	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/shadowsocks.extra $(1)/etc/init.d/shadowsocks
+	$(INSTALL_BIN) ./files/shadowsocks.spec $(1)/etc/init.d/shadowsocks
 endef
 
-Package/shadowsocks-libev-polarssl-extra/install = $(Package/shadowsocks-libev-extra/install)
+Package/shadowsocks-libev-spec-polarssl/install = $(Package/shadowsocks-libev-spec/install)
 
 $(eval $(call BuildPackage,shadowsocks-libev))
-$(eval $(call BuildPackage,shadowsocks-libev-extra))
+$(eval $(call BuildPackage,shadowsocks-libev-spec))
 $(eval $(call BuildPackage,shadowsocks-libev-polarssl))
-$(eval $(call BuildPackage,shadowsocks-libev-polarssl-extra))
+$(eval $(call BuildPackage,shadowsocks-libev-spec-polarssl))

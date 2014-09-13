@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 
-START=95
+START=59
 
 SERVICE_USE_PID=1
 SERVICE_WRITE_PID=1
@@ -11,20 +11,12 @@ IGNORE=/etc/shadowsocks/ignore.list
 SERVER=8.8.4.4:53
 
 start() {
-	# Client Mode
-	# service_start /usr/bin/ss-local -c $CONFIG
-
-	# Proxy Mode
 	/usr/bin/ss-rules -c $CONFIG -i $IGNORE && \
 	service_start /usr/bin/ss-redir -c $CONFIG
 	service_start /usr/bin/ss-tunnel -c $CONFIG -l 5353 -L $SERVER -u
 }
 
 stop() {
-	# Client Mode
-	# service_stop /usr/bin/ss-local
-
-	# Proxy Mode
 	service_stop /usr/bin/ss-tunnel
 	service_stop /usr/bin/ss-redir && \
 	/etc/init.d/firewall restart>/dev/null 2>&1
