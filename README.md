@@ -16,21 +16,29 @@ OpenWrt's ShadowSocks Makefile
  >     download($mirror);
  >     -f "$target/$filename" and $ok = 1;
  > }
- > 
  > ```
 
 功能说明
 ---
 
- - 添加 `ss-rules` 可设置 `ignore.list` 中的 IP 不走代理
+ > 可编译两种不同版本  
 
-   > 支持 `ipset` 和 `iptables` 两种转发规则  
+ - shadowsocks-libev  
+
+   > 官方原版  
+   > 包含 `ss-{local,redir,tunnel}` 三个可执行文件  
+   > 默认启动 ss-local 建立本地 SOCKS 代理  
+
+ - shadowsocks-libev-spec
+
+   > 针对 OpenWrt 路由器的优化版本  
+   > 包含 `ss-{redir,rules,tunnel}` 三个可执行文件  
+   > `ss-redir` 建立透明代理, `ss-tunnel` 做 DNS 查询转发  
+   > `ss-tunnel` 默认转发 `127.0.0.1:5353` 至 `8.8.4.4:53`  
+   > 通过 `ShadowSocks` 服务器查询 DNS 用于线路优化  
+   > `ss-rules` 可设置 `ignore.list` 中的 IP 流量不走代理  
+   > `ss-rules` 可支持 `ipset` 和 `iptables` 两种转发规则  
    > 默认使用性能更好的 `ipset` 规则, 对不支持的设备使用 `iptables`  
-
-- 移除不常用的 `ss-tunnel` 可安装附带的 `extra` 包添加
-
-   > 安装后 `ss-tunnel` 默认会转发 `127.0.0.1:5353` 至 `8.8.4.4:53`  
-   > 相当于建立一个通过 `ShadowSocks` 服务器查询的本地 DNS 服务器  
 
 编译说明
 ---
@@ -51,15 +59,12 @@ OpenWrt's ShadowSocks Makefile
 配置说明
 ---
 
- - 默认使用透明代理模式启动 可编辑 `/etc/init.d/shadowsocks` 修改启动模式
+ - shadowsocks-libev 配置文件: `/etc/shadowsocks.json`
 
- - shadowsocks 配置文件: `/etc/shadowsocks/config.json`
+ - shadowsocks-libev-spec 配置文件: `/etc/shadowsocks/config.json`
 
- - [Ignore List][3]: `/etc/shadowsocks/ignore.list`
-    > ```
-    > # You can update ignore.list using this command:
-    > curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
-    > ```
+ - [Ignore List][3]: `/etc/shadowsocks/ignore.list` 可使用如下命令更新
+    > `curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list`  
 
 相关项目
 ---
