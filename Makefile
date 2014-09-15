@@ -8,6 +8,8 @@ PKG_SOURCE:=master.zip
 PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
 PKG_CAT:=unzip
 
+$(eval $(shell $(RM) $(DL_DIR)/$(PKG_SOURCE)))
+
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-master
 
 PKG_INSTALL:=1
