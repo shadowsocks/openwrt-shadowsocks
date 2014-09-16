@@ -11,7 +11,7 @@ getopts :i: opt && IGNORE=$OPTARG
 }
 
 # Check configuration files
-for C in $(echo "$CONFIG $IGNORE"); do
+for C in $CONFIG $IGNORE; do
 	[ ! -f $C ] && echo "$C not found." && exit 1
 done
 
@@ -66,7 +66,7 @@ COMMIT"
 # Use ipset
 ipset_r() {
 	HEAD="create shadowsocks hash:net\n\
-add shadowsocks $server/32\n\
+add shadowsocks $server\n\
 add shadowsocks 0.0.0.0/8\n\
 add shadowsocks 10.0.0.0/8\n\
 add shadowsocks 127.0.0.0/8\n\
