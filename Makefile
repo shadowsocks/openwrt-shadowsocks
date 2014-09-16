@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=1.4.7
-PKG_RELEASE=1
-PKG_SHA:=06f1a57c9bd5a4ff96966a616ab3f1ec330f4c4c
+PKG_RELEASE=2
+PKG_SHA:=a05585bbe2d23669ea8bccaad3e9a66744d85a3b
 
 PKG_SOURCE:=$(PKG_SHA).zip
 PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
