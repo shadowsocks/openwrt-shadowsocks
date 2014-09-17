@@ -3,13 +3,12 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=1.4.7
 PKG_RELEASE=2
-PKG_SHA:=a05585bbe2d23669ea8bccaad3e9a66744d85a3b
 
-PKG_SOURCE:=$(PKG_SHA).zip
+PKG_SOURCE:=master.zip
 PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
 PKG_CAT:=unzip
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_SHA)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-master
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
@@ -78,6 +77,7 @@ endef
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
 Package/shadowsocks-libev-spec-polarssl/install = $(Package/shadowsocks-libev-spec/install)
 
+$(shell $(RM) $(DL_DIR)/$(PKG_SOURCE))
 $(eval $(call BuildPackage,shadowsocks-libev))
 $(eval $(call BuildPackage,shadowsocks-libev-spec))
 $(eval $(call BuildPackage,shadowsocks-libev-polarssl))

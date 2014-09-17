@@ -6,7 +6,7 @@ OpenWrt's ShadowSocks Makefile
 功能说明
 ---
 
- > 可编译两种不同版本  
+ > 可编译两种版本  
 
  - shadowsocks-libev  
 
@@ -19,8 +19,10 @@ OpenWrt's ShadowSocks Makefile
    > 针对 OpenWrt 路由器的优化版本  
    > 包含 `ss-{redir,rules,tunnel}` 三个可执行文件  
    > `ss-redir` 建立透明代理, `ss-tunnel` 做 DNS 查询转发  
+
    > `ss-tunnel` 默认转发 `127.0.0.1:5353` 至 `8.8.4.4:53`  
    > 通过 `ShadowSocks` 服务器查询 DNS 用于线路优化  
+
    > `ss-rules` 可设置 `ignore.list` 中的 IP 流量不走代理  
    > `ss-rules` 可支持 `ipset` 和 `iptables` 两种转发规则  
    > 默认使用性能更好的 `ipset` 规则, 对不支持的设备使用 `iptables`  
@@ -28,17 +30,19 @@ OpenWrt's ShadowSocks Makefile
 编译说明
 ---
 
- - OpenWrt 平台的编译, [预编译 IPK 下载][2]
+ - 从 OpenWrt 的 SDK 编译, [预编译 IPK 下载][2]
 
  > ```
+ > # 此处下载 SDK: http://downloads.openwrt.org/snapshots/trunk/
+ > # 以 ar71xx 平台为例
+ > tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
+ > cd OpenWrt-SDK-ar71xx-*
  > # 获取 Makefile
- > git clone https://github.com/aa65535/openwrt-shadowsocks.git package/network/shadowsocks
+ > git clone https://github.com/aa65535/openwrt-shadowsocks.git package/shadowsocks-libev
  > # 选择要编译的包 Network -> shadowsocks-libev
  > make menuconfig
- > # 开始编译 shadowsocks
- > rm -f dl/master.zip && make package/network/shadowsocks/compile V=99
- > # 若上面语句编译出错 需要先使用下面语句编译出 Toolchain
- > make V=99
+ > # 开始编译
+ > make package/shadowsocks-libev/compile V=99
  > ```
 
 配置说明
@@ -58,7 +62,6 @@ OpenWrt's ShadowSocks Makefile
  -------------------------|-----------------------------------
  [openwrt-chinadns][5]    | OpenWrt's ChinaDNS-C Makefile
  [openwrt-dnsmasq][6]     | OpenWrt's Dnsmasq Patch & Makefile
- [openwrt-shadowsocks][7] | OpenWrt's ShadowSocks Makefile
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
