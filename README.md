@@ -30,10 +30,9 @@ OpenWrt's ShadowSocks Makefile
 编译说明
 ---
 
- - 从 OpenWrt 的 SDK 编译, [预编译 IPK 下载][2]
+ - 从 OpenWrt 的 [SDK][S] 编译, [预编译 IPK 下载][2]
 
- > ```
- > # 此处下载 SDK: http://downloads.openwrt.org/snapshots/trunk/
+ > ```bash
  > # 以 ar71xx 平台为例
  > tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
  > cd OpenWrt-SDK-ar71xx-*
@@ -52,8 +51,10 @@ OpenWrt's ShadowSocks Makefile
 
  - shadowsocks-libev-spec 配置文件: `/etc/shadowsocks/config.json`
 
- - [Ignore List][3]: `/etc/shadowsocks/ignore.list` 可使用如下命令更新
-    > `curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list`  
+ - [Ignore List][3]: `/etc/shadowsocks/ignore.list` 可以使用下面命令更新
+    > ```bash
+    > curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
+    > ```
 
 相关项目
 ---
@@ -70,3 +71,4 @@ OpenWrt's ShadowSocks Makefile
   [5]: https://github.com/aa65535/openwrt-chinadns
   [6]: https://github.com/aa65535/openwrt-dnsmasq
   [7]: https://github.com/aa65535/openwrt-shadowsocks
+  [S]: http://downloads.openwrt.org/snapshots/trunk/
