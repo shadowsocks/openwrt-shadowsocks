@@ -1,7 +1,7 @@
 OpenWrt's ShadowSocks Makefile
 ===
 
- > 编译时默认从 [shadowsocks-libev][1] 下载最新源码
+ > 编译时默认从 [madeye/shadowsocks-libev][1] 下载最新源码
 
 功能说明
 ---
