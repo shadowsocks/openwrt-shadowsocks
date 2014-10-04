@@ -63,6 +63,7 @@ OpenWrt's ShadowSocks Makefile
  -------------------------|-----------------------------------
  [openwrt-chinadns][5]    | OpenWrt's ChinaDNS-C Makefile
  [openwrt-dnsmasq][6]     | OpenWrt's Dnsmasq Patch & Makefile
+ [openwrt-shadowvpn][7]   | OpenWrt's ShadowVPN Makefile
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
@@ -70,5 +71,5 @@ OpenWrt's ShadowSocks Makefile
   [3]: https://github.com/aa65535/openwrt-shadowsocks/blob/master/files/shadowsocks.list
   [5]: https://github.com/aa65535/openwrt-chinadns
   [6]: https://github.com/aa65535/openwrt-dnsmasq
-  [7]: https://github.com/aa65535/openwrt-shadowsocks
+  [7]: https://github.com/aa65535/openwrt-shadowvpn
   [S]: http://downloads.openwrt.org/snapshots/trunk/
