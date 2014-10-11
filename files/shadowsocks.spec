@@ -12,7 +12,7 @@ IGNORE=/etc/shadowsocks/ignore.list
 start() {
 	/usr/bin/ss-rules -c $CONFIG -i $IGNORE && \
 	service_start /usr/bin/ss-redir -c $CONFIG
-	service_start /usr/bin/ss-tunnel -c $CONFIG -l 5353 -L 8.8.4.4:53 -u
+	service_start /usr/bin/ss-tunnel -c $CONFIG -t 5 -l 5353 -L 8.8.4.4:53 -u
 }
 
 stop() {
