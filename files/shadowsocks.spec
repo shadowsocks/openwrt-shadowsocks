@@ -16,7 +16,11 @@ start() {
 }
 
 stop() {
-	service_stop /usr/bin/ss-tunnel
+	/usr/bin/ss-rules -c $CONFIG -f && \
 	service_stop /usr/bin/ss-redir
-	/etc/init.d/firewall restart>/dev/null 2>&1
+	service_stop /usr/bin/ss-tunnel
+}
+
+reload() {
+	/usr/bin/ss-rules -c $CONFIG -i $IGNORE
 }

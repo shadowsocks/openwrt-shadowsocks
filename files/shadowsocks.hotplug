@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ "$ACTION" = ifup ] || exit 0
+
+if ps | grep -v "grep" | grep "ss-redir"; then
+	/etc/init.d/shadowsocks reload
+	logger -t ShadowSocks "Reload ShadowSocks due to ifup of $INTERFACE ($DEVICE)"
+fi
