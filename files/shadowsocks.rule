@@ -1,18 +1,40 @@
 #!/bin/sh
 
-# Get argument
-while getopts ":c:i:f" arg; do
+while getopts ":s:l:c:i:f" arg; do
 	case $arg in
-		c) CONFIG=$OPTARG
-		;;
-		i) IGNORE=$OPTARG
-		;;
-		f) FLUSH=1
-		;;
+		s)
+			SERVER=$OPTARG
+			;;
+		l)
+			LOCAL_PORT=$OPTARG
+			;;
+		c)
+			CONFIG=$OPTARG
+			;;
+		i)
+			IGNORE=$OPTARG
+			;;
+		f)
+			FLUSH=1
+			;;
 	esac
 done
 
-# Check configuration file
+usage() {
+	echo -e "usage:
+
+    ss-rules
+
+        -s <server_host>           ip address of your remote server
+        -l <local_port>            port number of your local server
+
+        [-c <config_file>]         config file in json
+        [-i <ignore_list>]         config file of ignore list
+
+        [-f]                       flush the rules
+"
+}
+
 if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	eval $(awk -F'[,:]' '{
 		for (i=1; i<=NF; i++) {
@@ -27,23 +49,27 @@ if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	}' $CONFIG | tr -d '" ')
 fi
 
-# Check parameters
-if [ -z "$server" ] || [ -z "$local_port" ]; then
-	echo "Can't read server ip or local port from $CONFIG."
-	exit 128
+if [ -n "$SERVER" ]; then
+	server=$SERVER
 fi
 
-# Generate ip list
+if [ -n "$LOCAL_PORT" ]; then
+	local_port=$LOCAL_PORT
+fi
+
+if [ -z "$server" ] || [ -z "$local_port" ]; then
+	usage
+	exit 1
+fi
+
 IPLIST="$server\n0.0.0.0/8\n10.0.0.0/8
 127.0.0.0/8\n169.254.0.0/16\n172.16.0.0/12
 192.168.0.0/16\n224.0.0.0/4\n240.0.0.0/4"
 
-# Check ignore list file
 if [ -n "$IGNORE" ] && [ -f "$IGNORE" ]; then
 	IPLIST="$IPLIST\n$(cat $IGNORE)"
 fi
 
-# Flush rules
 flush_r() {
 	iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
 	iptables -t nat -F SHADOWSOCKS && \
@@ -54,7 +80,6 @@ flush_r() {
 	[ -n "$FLUSH" ] && exit 0
 }
 
-# Use iptables
 iptab_r() {
 	local HEAD BODY TAIL
 
@@ -64,29 +89,24 @@ iptab_r() {
 	TAIL="-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port
 COMMIT"
 
-	# Read the ignore list
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)}')
 
-	# Apply the rules
 	echo -e "$HEAD\n$BODY\n$TAIL" | iptables-restore -n
 
 	exit $?
 }
 
-# Use ipset
 ipset_r() {
 	local HEAD BODY
 
 	HEAD="create shadowsocks hash:net"
 
-	# Read the ignore list
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("add shadowsocks %s\n", $1)}')
 
-	# Apply the rules
 	echo -e "$HEAD\n$BODY" | ipset -R && \
 	iptables -t nat -A PREROUTING -p tcp \
 		-m set ! --match-set shadowsocks dst \
@@ -97,7 +117,6 @@ ipset_r() {
 
 flush_r>/dev/null 2>&1
 
-# Catch error codes and select rules mode
 ipset -X shadowsocks>/dev/null 2>&1
 [ "$?" = 127 ] && iptab_r
 ipset_r || iptab_r
