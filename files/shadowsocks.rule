@@ -36,14 +36,12 @@ usage() {
 }
 
 get_ip() {
-    nslookup $1 114.114.114.114 | \
-    grep -v "114.114.114.114" | \
-    awk '{ip[NR]=$3}\
-        END{for(i=NR;i>0;i--)\
-            {if(ip[i] ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}$/)\
-                {print ip[i];break;}
-            }\
-        }'
+	nslookup $1 114.114.114.114 | \
+	grep -v "114.114.114.114" | \
+	awk '{ip[NR]=$3}\
+		END{for(i=NR;i>0;i--)\
+			{if(ip[i] ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}$/)\
+				{print ip[i];break;}}}'
 }
 
 if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
