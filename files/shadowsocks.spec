@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 
-START=95
+START=99
 
 SERVICE_USE_PID=1
 SERVICE_WRITE_PID=1
