@@ -9,6 +9,9 @@ PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
 PKG_CAT:=unzip
 PKG_MAINTAINER:=Max Lv <max.c.lv@gmail.com>
 
+PKG_LICENSE:=GPLv3
+PKG_LICENSE_FILES:=LICENSE
+
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-master
 
 PKG_INSTALL:=1
