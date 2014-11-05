@@ -1,6 +1,8 @@
 #!/bin/sh
 
-while getopts ":s:l:c:i:f" arg; do
+EXT_ARGS=""
+
+while getopts ":s:l:c:i:e:f" arg; do
 	case $arg in
 		s)
 			SERVER=$OPTARG
@@ -13,6 +15,9 @@ while getopts ":s:l:c:i:f" arg; do
 			;;
 		i)
 			IGNORE=$OPTARG
+			;;
+		e)
+			EXT_ARGS=$OPTARG
 			;;
 		f)
 			FLUSH=1
@@ -30,6 +35,7 @@ usage() {
 
         [-c <config_file>]         config file in json
         [-i <ignore_list>]         config file of ignore list
+        [-e <extra_options>]       extra options of iptables
 
         [-f]                       flush the rules
 "
@@ -74,7 +80,7 @@ flush_r() {
 	iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
 	iptables -t nat -F SHADOWSOCKS && \
 	iptables -t nat -X SHADOWSOCKS
-	iptables -t nat -D PREROUTING -p tcp \
+	iptables -t nat -D PREROUTING -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $local_port
 	[ -n "$FLUSH" ] && exit 0
@@ -86,7 +92,7 @@ iptab_r() {
 	HEAD="*nat
 :SHADOWSOCKS - [0:0]
 -A PREROUTING -p tcp -j SHADOWSOCKS"
-	TAIL="-A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $local_port
+	TAIL="-A SHADOWSOCKS -p tcp $EXT_ARGS -j REDIRECT --to-ports $local_port
 COMMIT"
 
 	BODY=$(echo -e "$IPLIST" | \
@@ -108,7 +114,7 @@ ipset_r() {
 			{printf("add shadowsocks %s\n", $1)}')
 
 	echo -e "$HEAD\n$BODY" | ipset -R && \
-	iptables -t nat -A PREROUTING -p tcp \
+	iptables -t nat -A PREROUTING -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $local_port
 
