@@ -17,7 +17,7 @@ start() {
 }
 
 stop() {
-	/usr/bin/ss-rules -c $CONFIG -e "$EXT_ARGS" -f && \
+	/usr/bin/ss-rules -f && \
 	service_stop /usr/bin/ss-redir
 	service_stop /usr/bin/ss-tunnel
 }

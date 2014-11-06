@@ -50,39 +50,16 @@ get_ip() {
 				{print ip[i];break;}}}'
 }
 
-if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
-	eval $(awk -F'[,:]' '{
-		for (i=1; i<=NF; i++) {
-			if ($i ~ /"server"/) {
-				printf("server=%s;", $(i+1))
-			}
-			if ($i ~ /"local_port"/) {
-				printf("local_port=%s;", $(i+1))
-			}
-		}
-	}' $CONFIG | tr -d '" ')
-fi
-
-if [ -n "$SERVER" ]; then
-	server=$SERVER
-fi
-
-if [ -n "$LOCAL_PORT" ]; then
-	local_port=$LOCAL_PORT
-fi
-
-if [ -z "$server" ] || [ -z "$local_port" ]; then
-	usage
-	exit 1
-fi
-
 flush_r() {
-	iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
-	iptables -t nat -F SHADOWSOCKS && \
-	iptables -t nat -X SHADOWSOCKS
-	iptables -t nat -D PREROUTING -p tcp $EXT_ARGS \
-		-m set ! --match-set shadowsocks dst \
-		-j REDIRECT --to-ports $local_port
+	local IPT=$(iptables-save | grep "shadowsocks" | \
+		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
+	if [ -n "$IPT" ]; then
+		eval $IPT
+	else
+		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+		iptables -t nat -F SHADOWSOCKS && \
+		iptables -t nat -X SHADOWSOCKS
+	fi
 	[ -n "$FLUSH" ] && exit 0
 }
 
@@ -122,6 +99,32 @@ ipset_r() {
 }
 
 flush_r>/dev/null 2>&1
+
+if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
+	eval $(awk -F'[,:]' '{
+		for (i=1; i<=NF; i++) {
+			if ($i ~ /"server"/) {
+				printf("server=%s;", $(i+1))
+			}
+			if ($i ~ /"local_port"/) {
+				printf("local_port=%s;", $(i+1))
+			}
+		}
+	}' $CONFIG | tr -d '" ')
+fi
+
+if [ -n "$SERVER" ]; then
+	server=$SERVER
+fi
+
+if [ -n "$LOCAL_PORT" ]; then
+	local_port=$LOCAL_PORT
+fi
+
+if [ -z "$server" ] || [ -z "$local_port" ]; then
+	usage
+	exit 1
+fi
 
 server_ip=$(echo "$server" | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}$")
 
