@@ -2,43 +2,18 @@
 
 EXT_ARGS=""
 
-while getopts ":s:l:c:i:e:f" arg; do
-	case $arg in
-		s)
-			SERVER=$OPTARG
-			;;
-		l)
-			LOCAL_PORT=$OPTARG
-			;;
-		c)
-			CONFIG=$OPTARG
-			;;
-		i)
-			IGNORE=$OPTARG
-			;;
-		e)
-			EXT_ARGS=$OPTARG
-			;;
-		f)
-			FLUSH=1
-			;;
-	esac
-done
-
 usage() {
 	cat <<EOF
 Usage: ss-rules [options]
 
-    Valid options are:
+Valid options are:
 
-        -s <server_host>         host name or ip address of your remote server
-        -l <local_port>          port number of your local server
-
-        -c <config_file>         config file in json
-        -i <ignore_list>         config file of ignore list
-        -e <extra_options>       extra options of iptables
-
-        -f                       flush the rules
+    -s <server_host>        hostname or ip of shadowsocks remote server
+    -l <local_port>         port number of shadowsocks local server
+    -c <config_file>        config file of shadowsocks
+    -i <ignore_list_file>   config file of ignore list
+    -e <extra_options>      extra options of iptables
+    -f                      flush the rules
 EOF
 }
 
@@ -52,15 +27,21 @@ get_ip() {
 }
 
 flush_r() {
-	local IPT=$(iptables-save | grep "match-set shadowsocks dst" | \
-		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
-	if [ -n "$IPT" ]; then
-		eval $IPT
-		ipset -X shadowsocks
+	if command -v ipset>/dev/null 2>&1; then
+		local IPT=$(iptables-save | grep "match-set shadowsocks dst" | \
+			sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
+		if [ -n "$IPT" ]; then
+			eval $IPT
+		fi
+		ipset -X shadowsocks>/dev/null 2>&1
+		return 0
 	else
-		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
-		iptables -t nat -F SHADOWSOCKS && \
-		iptables -t nat -X SHADOWSOCKS
+		if iptables-save | grep -q "tcp -j SHADOWSOCKS"; then
+			iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+			iptables -t nat -F SHADOWSOCKS>/dev/null 2>&1 && \
+			iptables -t nat -X SHADOWSOCKS
+		fi
+		return 1
 	fi
 }
 
@@ -70,12 +51,13 @@ iptab_r() {
 	HEAD="*nat
 :SHADOWSOCKS - [0:0]
 -A PREROUTING -p tcp -j SHADOWSOCKS"
-	TAIL="-A SHADOWSOCKS -p tcp $EXT_ARGS -j REDIRECT --to-ports $local_port
-COMMIT"
 
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)}')
+
+	TAIL="-A SHADOWSOCKS -p tcp $EXT_ARGS -j REDIRECT --to-ports $local_port
+COMMIT"
 
 	echo -e "$HEAD\n$BODY\n$TAIL" | iptables-restore -n
 
@@ -99,12 +81,31 @@ ipset_r() {
 	return $?
 }
 
-if [ -n "$FLUSH" ]; then
-	flush_r>/dev/null 2>&1
-	exit 0
-fi
+while getopts ":s:l:c:i:e:f" arg; do
+	case $arg in
+		s)
+			SERVER=$OPTARG
+			;;
+		l)
+			LOCAL_PORT=$OPTARG
+			;;
+		c)
+			CONFIG=$OPTARG
+			;;
+		i)
+			IGNORE=$OPTARG
+			;;
+		e)
+			EXT_ARGS=$OPTARG
+			;;
+		f)
+			flush_r
+			exit 0
+			;;
+	esac
+done
 
-if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
+if [ -f "$CONFIG" ]; then
 	eval $(awk -F'[,:]' '{
 		for (i=1; i<=NF; i++) {
 			if ($i ~ /"server"/) {
@@ -127,12 +128,10 @@ fi
 
 if [ -z "$server" ] || [ -z "$local_port" ]; then
 	usage
-	exit 1
+	exit 2
 fi
 
-server_ip=$(echo "$server" | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}$")
-
-if [ -z "$server_ip" ]; then
+if !(echo "$server" | grep -q -E "^([0-9]{1,3}\.){3}[0-9]{1,3}$"); then
 	echo "The $server is not ip, trying to resolve it."
 	server=$(get_ip $server)
 	[ -z "$server" ] && exit 1
@@ -143,12 +142,10 @@ IPLIST="$server\n0.0.0.0/8\n10.0.0.0/8
 127.0.0.0/8\n169.254.0.0/16\n172.16.0.0/12
 192.168.0.0/16\n224.0.0.0/4\n240.0.0.0/4"
 
-if [ -n "$IGNORE" ] && [ -f "$IGNORE" ]; then
+if [ -f "$IGNORE" ]; then
 	IPLIST="$IPLIST\n$(cat $IGNORE)"
 fi
 
-flush_r>/dev/null 2>&1
-ipset -v>/dev/null 2>&1
-[ "$?" = 0 ] && ipset_r || iptab_r
+flush_r && ipset_r || iptab_r
 
 exit $?
