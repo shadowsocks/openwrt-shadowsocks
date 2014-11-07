@@ -26,19 +26,20 @@ while getopts ":s:l:c:i:e:f" arg; do
 done
 
 usage() {
-	echo -e "usage:
+	cat <<EOF
+Usage: ss-rules [options]
 
-    ss-rules
+    Valid options are:
 
-        -s <server_host>           host name or ip address of your remote server
-        -l <local_port>            port number of your local server
+        -s <server_host>         host name or ip address of your remote server
+        -l <local_port>          port number of your local server
 
-        [-c <config_file>]         config file in json
-        [-i <ignore_list>]         config file of ignore list
-        [-e <extra_options>]       extra options of iptables
+        -c <config_file>         config file in json
+        -i <ignore_list>         config file of ignore list
+        -e <extra_options>       extra options of iptables
 
-        [-f]                       flush the rules
-"
+        -f                       flush the rules
+EOF
 }
 
 get_ip() {
@@ -51,16 +52,16 @@ get_ip() {
 }
 
 flush_r() {
-	local IPT=$(iptables-save | grep "shadowsocks" | \
+	local IPT=$(iptables-save | grep "match-set shadowsocks dst" | \
 		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
 	if [ -n "$IPT" ]; then
 		eval $IPT
+		ipset -X shadowsocks
 	else
 		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
 		iptables -t nat -F SHADOWSOCKS && \
 		iptables -t nat -X SHADOWSOCKS
 	fi
-	[ -n "$FLUSH" ] && exit 0
 }
 
 iptab_r() {
@@ -98,7 +99,10 @@ ipset_r() {
 	return $?
 }
 
-flush_r>/dev/null 2>&1
+if [ -n "$FLUSH" ]; then
+	flush_r>/dev/null 2>&1
+	exit 0
+fi
 
 if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	eval $(awk -F'[,:]' '{
@@ -143,8 +147,8 @@ if [ -n "$IGNORE" ] && [ -f "$IGNORE" ]; then
 	IPLIST="$IPLIST\n$(cat $IGNORE)"
 fi
 
-ipset -X shadowsocks>/dev/null 2>&1
-[ "$?" = 127 ] && iptab_r
-ipset_r || iptab_r
+flush_r>/dev/null 2>&1
+ipset -v>/dev/null 2>&1
+[ "$?" = 0 ] && ipset_r || iptab_r
 
 exit $?
