@@ -3,17 +3,17 @@
 EXT_ARGS=""
 
 usage() {
-	cat <<EOF
-Usage: ss-rules [options]
+	cat <<-EOF
+		Usage: ss-rules [options]
 
-Valid options are:
+		Valid options are:
 
-    -s <server_host>        hostname or ip of shadowsocks remote server
-    -l <local_port>         port number of shadowsocks local server
-    -c <config_file>        config file of shadowsocks
-    -i <ignore_list_file>   config file of ignore list
-    -e <extra_options>      extra options of iptables
-    -f                      flush the rules
+		    -s <server_host>        hostname or ip of shadowsocks remote server
+		    -l <local_port>         port number of shadowsocks local server
+		    -c <config_file>        config file of shadowsocks
+		    -i <ignore_list_file>   config file of ignore list
+		    -e <extra_options>      extra options of iptables
+		    -f                      flush the rules
 EOF
 }
 
