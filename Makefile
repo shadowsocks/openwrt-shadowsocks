@@ -48,6 +48,7 @@ define Package/shadowsocks-libev/conffiles
 endef
 
 define Package/shadowsocks-libev-spec/conffiles
+/etc/config/shadowsocks
 /etc/shadowsocks/config.json
 /etc/shadowsocks/ignore.list
 endef
@@ -88,6 +89,8 @@ define Package/shadowsocks-libev-spec/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-{redir,tunnel} $(1)/usr/bin
 	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/bin/ss-rules
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) ./files/shadowsocks.config $(1)/etc/config/shadowsocks
 	$(INSTALL_DIR) $(1)/etc/shadowsocks
 	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks/config.json
 	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
