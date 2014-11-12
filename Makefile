@@ -55,6 +55,23 @@ endef
 Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
 Package/shadowsocks-libev-spec-polarssl/conffiles = $(Package/shadowsocks-libev-spec/conffiles)
 
+define Package/shadowsocks-libev-spec/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	uci -q batch <<-EOF >/dev/null
+		delete firewall.shadowsocks
+		set firewall.shadowsocks=include
+		set firewall.shadowsocks.type=script
+		set firewall.shadowsocks.path=/usr/share/shadowsocks/firewall.include
+		set firewall.shadowsocks.reload=1
+		commit firewall
+EOF
+fi
+exit 0
+endef
+
+Package/shadowsocks-libev-spec-polarssl/postinst = $(Package/shadowsocks-libev-spec/postinst)
+
 ifeq ($(BUILD_VARIANT),polarssl)
 	CONFIGURE_ARGS += --with-crypto-library=polarssl
 endif
@@ -76,8 +93,8 @@ define Package/shadowsocks-libev-spec/install
 	$(INSTALL_CONF) ./files/shadowsocks.list $(1)/etc/shadowsocks/ignore.list
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/shadowsocks.spec $(1)/etc/init.d/shadowsocks
-	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
-	$(INSTALL_DATA) ./files/shadowsocks.hotplug $(1)/etc/hotplug.d/iface/30-shadowsocks
+	$(INSTALL_DIR) $(1)/usr/share/shadowsocks
+	$(INSTALL_DATA) ./files/shadowsocks.include $(1)/usr/share/shadowsocks/firewall.include
 endef
 
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
