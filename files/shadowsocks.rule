@@ -96,7 +96,7 @@ while getopts ":s:l:c:i:e:f" arg; do
 			IGNORE=$OPTARG
 			;;
 		e)
-			EXT_ARGS=$OPTARG
+			EXT_ARGS="$EXT_ARGS $OPTARG"
 			;;
 		f)
 			flush_r
@@ -131,7 +131,7 @@ if [ -z "$server" ] || [ -z "$local_port" ]; then
 	exit 2
 fi
 
-if !(echo "$server" | grep -q -E "^([0-9]{1,3}\.){3}[0-9]{1,3}$"); then
+if !(echo "$server" | grep -qE "^([0-9]{1,3}\.){3}[0-9]{1,3}$"); then
 	echo "The $server is not ip, trying to resolve it."
 	server=$(get_ip $server)
 	[ -z "$server" ] && exit 1
