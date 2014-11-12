@@ -27,22 +27,22 @@ get_ip() {
 }
 
 flush_r() {
+	local IPT=$(iptables-save | grep "^-A PREROUTING")
+
+	eval $(echo "$IPT" | grep "shadowsocks" | \
+		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
+
+	if echo "$IPT" | grep -q "SHADOWSOCKS"; then
+		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+		iptables -t nat -F SHADOWSOCKS>/dev/null 2>&1 && \
+		iptables -t nat -X SHADOWSOCKS
+	fi
+
 	if command -v ipset>/dev/null 2>&1; then
-		local IPT=$(iptables-save | grep "match-set shadowsocks dst" | \
-			sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
-		if [ -n "$IPT" ]; then
-			eval $IPT
-		fi
 		ipset -X shadowsocks>/dev/null 2>&1
 		return 0
-	else
-		if iptables-save | grep -q "tcp -j SHADOWSOCKS"; then
-			iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
-			iptables -t nat -F SHADOWSOCKS>/dev/null 2>&1 && \
-			iptables -t nat -X SHADOWSOCKS
-		fi
-		return 1
 	fi
+	return 1
 }
 
 iptab_r() {
