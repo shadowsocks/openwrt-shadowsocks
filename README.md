@@ -26,6 +26,7 @@ OpenWrt's ShadowSocks Makefile
    > `ss-rules` 可设置 `ignore.list` 中的 IP 流量不走代理  
    > `ss-rules` 可支持 `ipset` 和 `iptables` 两种转发规则  
    > 默认使用性能更好的 `ipset` 规则, 对不支持的设备使用 `iptables`  
+   > 此版本从 `v1.5.2` 开始可以使用 [LuCI][L] 进行配置  
 
 编译说明
 ---
@@ -73,3 +74,4 @@ OpenWrt's ShadowSocks Makefile
   [6]: https://github.com/aa65535/openwrt-dnsmasq
   [7]: https://github.com/aa65535/openwrt-shadowvpn
   [S]: http://downloads.openwrt.org/snapshots/trunk/
+  [L]: https://github.com/aa65535/openwrt-dist-luci
