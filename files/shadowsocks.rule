@@ -27,16 +27,23 @@ get_ip() {
 }
 
 flush_r() {
-	local IPT=$(iptables-save | grep "^-A PREROUTING")
+	local IPT
 
-	eval $(echo "$IPT" | grep "shadowsocks" | \
-		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
-
-	if echo "$IPT" | grep -q "SHADOWSOCKS"; then
-		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
-		iptables -t nat -F SHADOWSOCKS>/dev/null 2>&1 && \
-		iptables -t nat -X SHADOWSOCKS
-	fi
+	while true; do
+		IPT=$(iptables-save | grep "^-A PREROUTING")
+		if [ -z "$IPT" ]; then
+			sleep 1
+			continue
+		fi
+		eval $(echo "$IPT" | grep "shadowsocks" | \
+			sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
+		if echo "$IPT" | grep -q "SHADOWSOCKS"; then
+			iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+			iptables -t nat -F SHADOWSOCKS>/dev/null 2>&1 && \
+			iptables -t nat -X SHADOWSOCKS
+		fi
+		break
+	done
 
 	if command -v ipset>/dev/null 2>&1; then
 		ipset -X shadowsocks>/dev/null 2>&1
@@ -48,15 +55,14 @@ flush_r() {
 iptab_r() {
 	local HEAD BODY TAIL
 
-	HEAD="*nat
-:SHADOWSOCKS - [0:0]
--A PREROUTING -p tcp -j SHADOWSOCKS"
+	HEAD="*nat\n:SHADOWSOCKS - [0:0]"
 
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)}')
 
 	TAIL="-A SHADOWSOCKS -p tcp $EXT_ARGS -j REDIRECT --to-ports $local_port
+-A PREROUTING -p tcp -j SHADOWSOCKS
 COMMIT"
 
 	echo -e "$HEAD\n$BODY\n$TAIL" | iptables-restore -n
@@ -108,12 +114,10 @@ done
 if [ -f "$CONFIG" ]; then
 	eval $(awk -F'[,:]' '{
 		for (i=1; i<=NF; i++) {
-			if ($i ~ /"server"/) {
-				printf("server=%s;", $(i+1))
-			}
-			if ($i ~ /"local_port"/) {
-				printf("local_port=%s;", $(i+1))
-			}
+			if ($i ~ /"server"/)
+				{printf("server=%s;", $(i+1))}
+			if ($i ~ /"local_port"/)
+				{printf("local_port=%s;", $(i+1))}
 		}
 	}' $CONFIG | tr -d '" ')
 fi
