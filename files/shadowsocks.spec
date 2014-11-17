@@ -1,105 +1,132 @@
 #!/bin/sh /etc/rc.common
 
-START=95
+START=90
+STOP=15
 
 SERVICE_USE_PID=1
 SERVICE_WRITE_PID=1
 SERVICE_DAEMONIZE=1
 EXTRA_COMMANDS="rules"
 
-append_arg() {
-	local cfg="$1"
-	local var="$2"
-	local opt="$3"
-	local val
-	config_get val "$cfg" "$var"
-	[ -n "$val" ] && args="$args $opt \"$val\""
+get_args() {
+	config_get_bool enable $1 enable
+	config_get_bool use_conf_file $1 use_conf_file
+	config_get config_file $1 config_file
+	config_get server $1 server
+	config_get server_port $1 server_port
+	config_get local_port $1 local_port
+	config_get password $1 password
+	config_get encrypt_method $1 encrypt_method
+	config_get ignore_list $1 ignore_list
+	config_get_bool tunnel_enable $1 tunnel_enable
+	config_get tunnel_port $1 tunnel_port
+	config_get tunnel_forward $1 tunnel_forward
+	config_get ac_mode $1 ac_mode
+	config_get accept_ip $1 accept_ip
+	config_get reject_ip $1 reject_ip
+	: ${local_port:=1080}
+	: ${tunnel_port:=5353}
+	: ${tunnel_forward:=8.8.4.4:53}
+	: ${config_file:=/etc/shadowsocks/config.json}
+}
+
+check_args() {
+	local ERR="not defined"
+	while [ -n "$1" ]; do
+		case $1 in
+			s)
+				: ${server:?$ERR}
+				;;
+			p)
+				: ${server_port:?$ERR}
+				;;
+			k)
+				: ${password:?$ERR}
+				;;
+			m)
+				: ${encrypt_method:?$ERR}
+				;;
+		esac
+		shift
+	done
+	return 0
 }
 
 start_rules() {
-	local enable ac_mode source_ip use_conf_file
-	config_get_bool enable $1 enable
-	[ "$enable" = 1 ] || return 0
-	args=""
-	config_get_bool use_conf_file $1 use_conf_file
+	local ext_args
+	if [ "$ac_mode" = 1 -a -n "$accept_ip" ]; then
+		ext_args="-s $(echo $accept_ip | tr ' ' ',')"
+	fi
+	if [ "$ac_mode" = 2 -a -n "$reject_ip" ]; then
+		ext_args="! -s $reject_ip"
+	fi
 	if [ "$use_conf_file" = 1 ]; then
-		append_arg $1 config_file "-c"
+		/usr/bin/ss-rules \
+			-c "$config_file" \
+			-i "$ignore_list" \
+			-e "$ext_args"
 	else
-		append_arg $1 server "-s"
-		append_arg $1 local_port "-l"
+		check_args s
+		/usr/bin/ss-rules \
+			-s "$server" \
+			-l "$local_port" \
+			-i "$ignore_list" \
+			-e "$ext_args"
 	fi
-	[ -z "$args" ] && return 2
-	append_arg $1 ignore_list "-i"
-	config_get ac_mode $1 ac_mode
-	if [ "$ac_mode" = 1 ]; then
-		config_get source_ip $1 accept_ip
-		source_ip=$(echo $source_ip | tr ' ' ',')
-		[ -n "$source_ip" ] && args="$args -e \"-s $source_ip\""
-	fi
-	if [ "$ac_mode" = 2 ]; then
-		config_get source_ip $1 reject_ip
-		[ -n "$source_ip" ] && args="$args -e \"! -s $source_ip\""
-	fi
-	eval "/usr/bin/ss-rules $args"
 	return $?
 }
 
 start_redir() {
-	local enable use_conf_file
-	config_get_bool enable $1 enable
-	[ "$enable" = 1 ] || return 0
-	args=""
-	config_get_bool use_conf_file $1 use_conf_file
 	if [ "$use_conf_file" = 1 ]; then
-		append_arg $1 config_file "-c"
+		service_start /usr/bin/ss-redir \
+			-c "$config_file"
 	else
-		append_arg $1 server "-s"
-		append_arg $1 server_port "-p"
-		append_arg $1 local_port "-l"
-		append_arg $1 password "-k"
-		append_arg $1 encrypt_method "-m"
+		check_args s p k m
+		service_start /usr/bin/ss-redir \
+			-s "$server" \
+			-p "$server_port" \
+			-l "$local_port" \
+			-k "$password" \
+			-m "$encrypt_method"
 	fi
-	[ -z "$args" ] && return 2
-	eval "service_start /usr/bin/ss-redir $args"
 	return $?
 }
 
 start_tunnel() {
-	local enable tunnel_enable use_conf_file
-	config_get_bool enable $1 enable
-	config_get_bool tunnel_enable $1 tunnel_enable
-	[ "$enable" = 1 -a "$tunnel_enable" = 1 ] || return 0
-	args=""
-	config_get_bool use_conf_file $1 use_conf_file
 	if [ "$use_conf_file" = 1 ]; then
-		append_arg $1 config_file "-c"
+		service_start /usr/bin/ss-tunnel \
+			-c "$config_file" \
+			-l "$tunnel_port" \
+			-L "$tunnel_forward" \
+			-u
 	else
-		append_arg $1 server "-s"
-		append_arg $1 server_port "-p"
-		append_arg $1 password "-k"
-		append_arg $1 encrypt_method "-m"
+		check_args s p k m
+		service_start /usr/bin/ss-tunnel \
+			-s "$server" \
+			-p "$server_port" \
+			-k "$password" \
+			-m "$encrypt_method" \
+			-l "$tunnel_port" \
+			-L "$tunnel_forward" \
+			-u
 	fi
-	[ -z "$args" ] && return 2
-	append_arg $1 tunnel_port "-l"
-	append_arg $1 tunnel_forward "-L"
-	eval "service_start /usr/bin/ss-tunnel $args -u"
 	return $?
-}
-
-start() {
-	config_load shadowsocks
-	config_foreach start_rules shadowsocks && \
-	config_foreach start_redir shadowsocks
-	config_foreach start_tunnel shadowsocks
-}
-
-stop() {
-	/usr/bin/ss-rules -f && \
-	service_stop /usr/bin/ss-redir
-	service_stop /usr/bin/ss-tunnel
 }
 
 rules() {
 	config_load shadowsocks
-	config_foreach start_rules shadowsocks
+	config_foreach get_args shadowsocks
+	[ "$enable" = 1 ] || exit 0
+	start_rules
+}
+
+start() {
+	rules && start_redir
+	[ "$tunnel_enable" = 1 ] && start_tunnel
+}
+
+stop() {
+	/usr/bin/ss-rules -f
+	service_stop /usr/bin/ss-redir
+	service_stop /usr/bin/ss-tunnel
 }
