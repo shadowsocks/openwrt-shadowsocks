@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=1.5.3
-PKG_RELEASE=1
+PKG_RELEASE:=1
 
 PKG_SOURCE:=master.zip
 PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
@@ -68,6 +68,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 		commit firewall
 EOF
 fi
+rm -f /etc/hotplug.d/iface/30-shadowsocks
 exit 0
 endef
 
