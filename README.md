@@ -65,6 +65,7 @@ OpenWrt's ShadowSocks Makefile
  [openwrt-chinadns][5]    | OpenWrt's ChinaDNS-C Makefile
  [openwrt-dnsmasq][6]     | OpenWrt's Dnsmasq Patch & Makefile
  [openwrt-shadowvpn][7]   | OpenWrt's ShadowVPN Makefile
+ [openwrt-dist-luci][L]   | LuCI Applications of OpenWrt-dist
 
 
   [1]: https://github.com/madeye/shadowsocks-libev
