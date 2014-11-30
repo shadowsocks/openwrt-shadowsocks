@@ -6,27 +6,23 @@ OpenWrt's ShadowSocks Makefile
 功能说明
 ---
 
- > 可编译两种版本  
+ > 可编译两种版本 
 
- - shadowsocks-libev  
+ - shadowsocks-libev
 
    > 官方原版  
-   > 包含 `ss-{local,redir,tunnel}` 三个可执行文件  
+   > 包含 `ss-{local,redir,tunnel}`  
    > 默认启动 ss-local 建立本地 SOCKS 代理  
 
  - shadowsocks-libev-spec
 
-   > 针对 OpenWrt 路由器的优化版本  
-   > 包含 `ss-{redir,rules,tunnel}` 三个可执行文件  
-   > `ss-redir` 建立透明代理, `ss-tunnel` 做 DNS 查询转发  
+   > 针对 OpenWrt 的优化版本  
+   > 包含 `ss-{redir,rules,tunnel}`  
 
-   > `ss-tunnel` 默认转发 `127.0.0.1:5353` 至 `8.8.4.4:53`  
-   > 通过 `ShadowSocks` 服务器查询 DNS 用于线路优化  
-
-   > `ss-rules` 可设置 `ignore.list` 中的 IP 流量不走代理  
-   > `ss-rules` 可支持 `ipset` 和 `iptables` 两种转发规则  
-   > 默认使用性能更好的 `ipset` 规则, 对不支持的设备使用 `iptables`  
-   > 此版本从 `v1.5.2` 开始可以使用 [LuCI][L] 进行配置  
+   > `ss-redir` 建立透明代理  
+   > `ss-rules` 生成代理规则  
+   > `ss-tunnel` 提供 UDP 转发  
+   > 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面  
 
 编译说明
 ---
@@ -56,6 +52,8 @@ OpenWrt's ShadowSocks Makefile
     > ```bash
     > wget -O- 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
     > ```
+
+ - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
 
 相关项目
 ---
