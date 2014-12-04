@@ -18,8 +18,18 @@ EOF
 }
 
 get_ip() {
-	nslookup $1 114.114.114.114 | \
-	grep -v "114.114.114.114" | \
+	local COUNT=0
+	local NS=114.114.114.114
+
+	until ping -c1 $NS>/dev/null 2>&1; do
+		if [ "$COUNT" = 6 ]; then
+			echo "Operation timeout."
+			exit 1
+		fi
+		COUNT=$(($COUNT + 1))
+	done
+
+	nslookup $1 $NS | grep -v "$NS" | \
 	awk '{ip[NR]=$3}\
 		END{for(i=NR;i>0;i--)\
 			{if(ip[i] ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}$/)\
