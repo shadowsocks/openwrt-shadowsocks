@@ -1,18 +1,24 @@
+#
+# Copyright (C) 2014 OpenWrt-dist
+#
+# This is free software, licensed under the GNU General Public License v3.
+# See /LICENSE for more information.
+#
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=1.6.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=master.zip
-PKG_SOURCE_URL:=https://github.com/madeye/shadowsocks-libev/archive
-PKG_CAT:=unzip
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/aa65535/openwrt-shadowsocks/releases/download/v$(PKG_VERSION)
 PKG_MAINTAINER:=Max Lv <max.c.lv@gmail.com>
 
 PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-master
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
@@ -104,7 +110,6 @@ endef
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
 Package/shadowsocks-libev-spec-polarssl/install = $(Package/shadowsocks-libev-spec/install)
 
-$(shell $(RM) $(DL_DIR)/$(PKG_SOURCE))
 $(eval $(call BuildPackage,shadowsocks-libev))
 $(eval $(call BuildPackage,shadowsocks-libev-spec))
 $(eval $(call BuildPackage,shadowsocks-libev-polarssl))
