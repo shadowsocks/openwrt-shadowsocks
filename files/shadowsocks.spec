@@ -26,6 +26,7 @@ get_args() {
 	config_get reject_ip $1 reject_ip
 	: ${local_port:=1080}
 	: ${tunnel_port:=5353}
+	: ${ignore_list:=/dev/null}
 	: ${tunnel_forward:=8.8.4.4:53}
 	: ${config_file:=/etc/shadowsocks/config.json}
 }
