@@ -17,13 +17,16 @@ get_args() {
 	config_get local_port $1 local_port
 	config_get password $1 password
 	config_get encrypt_method $1 encrypt_method
-	config_get ignore_list $1 ignore_list
 	config_get_bool tunnel_enable $1 tunnel_enable
 	config_get tunnel_port $1 tunnel_port
 	config_get tunnel_forward $1 tunnel_forward
 	config_get ac_mode $1 ac_mode
 	config_get accept_ip $1 accept_ip
 	config_get reject_ip $1 reject_ip
+	config_get tr_mode $1 tr_mode
+	if [ "$tr_mode" != 1 ]; then
+		config_get ignore_list $1 ignore_list
+	fi
 	: ${local_port:=1080}
 	: ${tunnel_port:=5353}
 	: ${ignore_list:=/dev/null}
