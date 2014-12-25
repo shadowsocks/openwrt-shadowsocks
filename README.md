@@ -1,7 +1,7 @@
 OpenWrt's ShadowSocks Makefile
 ===
 
- > 当前版本: 1.6.1-1  
+ > 当前版本: 1.6.1-2  
 
 功能说明
 ---
