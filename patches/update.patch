@@ -1,0 +1,735 @@
+diff --git a/libsodium/Makefile.am b/libsodium/Makefile.am
+index 2d264ae..b57e536 100644
+--- a/libsodium/Makefile.am
++++ b/libsodium/Makefile.am
+@@ -13,8 +13,3 @@ SUBDIRS = \
+ 	dist-build \
+ 	msvc-scripts \
+ 	src
+-
+-pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = @PACKAGE_NAME@.pc
+-DISTCLEANFILES = $(pkgconfig_DATA)
+-
+diff --git a/libsodium/Makefile.in b/libsodium/Makefile.in
+index f75bd48..8f27636 100644
+--- a/libsodium/Makefile.in
++++ b/libsodium/Makefile.in
+@@ -14,7 +14,6 @@
+ # PARTICULAR PURPOSE.
+ 
+ @SET_MAKE@
+-
+ VPATH = @srcdir@
+ am__make_dryrun = \
+   { \
+@@ -94,35 +93,6 @@ am__can_run_installinfo = \
+     n|no|NO) false;; \
+     *) (install-info --version) >/dev/null 2>&1;; \
+   esac
+-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+-am__vpath_adj = case $$p in \
+-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+-    *) f=$$p;; \
+-  esac;
+-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+-am__install_max = 40
+-am__nobase_strip_setup = \
+-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+-am__nobase_strip = \
+-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+-am__nobase_list = $(am__nobase_strip_setup); \
+-  for p in $$list; do echo "$$p $$p"; done | \
+-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+-    if (++n[$$2] == $(am__install_max)) \
+-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+-    END { for (dir in files) print dir, files[dir] }'
+-am__base_list = \
+-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+-am__uninstall_files_from_dir = { \
+-  test -z "$$files" \
+-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+-         $(am__cd) "$$dir" && rm -f $$files; }; \
+-  }
+-am__installdirs = "$(DESTDIR)$(pkgconfigdir)"
+-DATA = $(pkgconfig_DATA)
+ RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
+   distclean-recursive maintainer-clean-recursive
+ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
+@@ -317,9 +287,6 @@ SUBDIRS = \
+ 	msvc-scripts \
+ 	src
+ 
+-pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = @PACKAGE_NAME@.pc
+-DISTCLEANFILES = $(pkgconfig_DATA)
+ all: all-recursive
+ 
+ .SUFFIXES:
+@@ -370,27 +337,6 @@ clean-libtool:
+ 
+ distclean-libtool:
+ 	-rm -f libtool config.lt
+-install-pkgconfigDATA: $(pkgconfig_DATA)
+-	@$(NORMAL_INSTALL)
+-	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+-	if test -n "$$list"; then \
+-	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgconfigdir)'"; \
+-	  $(MKDIR_P) "$(DESTDIR)$(pkgconfigdir)" || exit 1; \
+-	fi; \
+-	for p in $$list; do \
+-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+-	  echo "$$d$$p"; \
+-	done | $(am__base_list) | \
+-	while read files; do \
+-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgconfigdir)'"; \
+-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgconfigdir)" || exit $$?; \
+-	done
+-
+-uninstall-pkgconfigDATA:
+-	@$(NORMAL_UNINSTALL)
+-	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+-	dir='$(DESTDIR)$(pkgconfigdir)'; $(am__uninstall_files_from_dir)
+ 
+ # This directory's subdirectories are mostly independent; you can cd
+ # into them and run `make' without going through this Makefile.
+@@ -716,12 +662,9 @@ distcleancheck: distclean
+ 	       exit 1; } >&2
+ check-am: all-am
+ check: check-recursive
+-all-am: Makefile $(DATA)
++all-am: Makefile
+ installdirs: installdirs-recursive
+ installdirs-am:
+-	for dir in "$(DESTDIR)$(pkgconfigdir)"; do \
+-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+-	done
+ install: install-recursive
+ install-exec: install-exec-recursive
+ install-data: install-data-recursive
+@@ -748,7 +691,6 @@ clean-generic:
+ distclean-generic:
+ 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+ 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
+ 
+ maintainer-clean-generic:
+ 	@echo "This command is intended for maintainers to use"
+@@ -775,7 +717,7 @@ info: info-recursive
+ 
+ info-am:
+ 
+-install-data-am: install-pkgconfigDATA
++install-data-am:
+ 
+ install-dvi: install-dvi-recursive
+ 
+@@ -821,7 +763,7 @@ ps: ps-recursive
+ 
+ ps-am:
+ 
+-uninstall-am: uninstall-pkgconfigDATA
++uninstall-am:
+ 
+ .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
+ 	install-am install-strip tags-recursive
+@@ -836,12 +778,11 @@ uninstall-am: uninstall-pkgconfigDATA
+ 	install install-am install-data install-data-am install-dvi \
+ 	install-dvi-am install-exec install-exec-am install-html \
+ 	install-html-am install-info install-info-am install-man \
+-	install-pdf install-pdf-am install-pkgconfigDATA install-ps \
+-	install-ps-am install-strip installcheck installcheck-am \
+-	installdirs installdirs-am maintainer-clean \
+-	maintainer-clean-generic mostlyclean mostlyclean-generic \
+-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+-	uninstall uninstall-am uninstall-pkgconfigDATA
++	install-pdf install-pdf-am install-ps install-ps-am \
++	install-strip installcheck installcheck-am installdirs \
++	installdirs-am maintainer-clean maintainer-clean-generic \
++	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
++	ps ps-am tags tags-recursive uninstall uninstall-am
+ 
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+diff --git a/libsodium/src/libsodium/Makefile.am b/libsodium/src/libsodium/Makefile.am
+index dc21f4b..9a232ec 100644
+--- a/libsodium/src/libsodium/Makefile.am
++++ b/libsodium/src/libsodium/Makefile.am
+@@ -245,13 +245,5 @@ libsodium_la_CPPFLAGS = \
+ 	-I$(srcdir)/include/sodium \
+ 	-I$(builddir)/include/sodium
+ 
+-if HAVE_LD_OUTPUT_DEF
+-libsodium_la_LDFLAGS += -Wl,--output-def,libsodium-$(DLL_VERSION).def
+-defexecdir = $(bindir)
+-defexec_DATA = libsodium-$(DLL_VERSION).def
+-CLEANFILES = $(defexec_DATA)
+-libsodium-$(DLL_VERSION).def: libsodium.la
+-endif
+-
+ SUBDIRS = \
+ 	include
+diff --git a/libsodium/src/libsodium/Makefile.in b/libsodium/src/libsodium/Makefile.in
+index 8bfd1de..7fa4a6d 100644
+--- a/libsodium/src/libsodium/Makefile.in
++++ b/libsodium/src/libsodium/Makefile.in
+@@ -15,7 +15,6 @@
+ 
+ @SET_MAKE@
+ 
+-
+ VPATH = @srcdir@
+ am__make_dryrun = \
+   { \
+@@ -124,7 +123,6 @@ host_triplet = @host@
+ @MINIMAL_FALSE@	crypto_stream/salsa208/ref/stream_salsa208.c \
+ @MINIMAL_FALSE@	crypto_stream/salsa208/ref/xor_salsa208.c
+ 
+-@HAVE_LD_OUTPUT_DEF_TRUE@am__append_6 = -Wl,--output-def,libsodium-$(DLL_VERSION).def
+ subdir = src/libsodium
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+@@ -557,35 +555,6 @@ am__can_run_installinfo = \
+     n|no|NO) false;; \
+     *) (install-info --version) >/dev/null 2>&1;; \
+   esac
+-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+-am__vpath_adj = case $$p in \
+-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+-    *) f=$$p;; \
+-  esac;
+-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+-am__install_max = 40
+-am__nobase_strip_setup = \
+-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+-am__nobase_strip = \
+-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+-am__nobase_list = $(am__nobase_strip_setup); \
+-  for p in $$list; do echo "$$p $$p"; done | \
+-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+-    if (++n[$$2] == $(am__install_max)) \
+-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+-    END { for (dir in files) print dir, files[dir] }'
+-am__base_list = \
+-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+-am__uninstall_files_from_dir = { \
+-  test -z "$$files" \
+-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+-         $(am__cd) "$$dir" && rm -f $$files; }; \
+-  }
+-am__installdirs = "$(DESTDIR)$(defexecdir)"
+-DATA = $(defexec_DATA)
+ RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
+   distclean-recursive maintainer-clean-recursive
+ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
+@@ -898,16 +867,17 @@ libsodium_la_SOURCES =  \
+ 	sodium/runtime.c sodium/utils.c sodium/version.c \
+ 	$(am__append_1) $(am__append_2) $(am__append_3) \
+ 	$(am__append_4) $(am__append_5)
+-libsodium_la_LDFLAGS = $(AM_LDFLAGS) -export-dynamic -no-undefined \
+-	$(LIBTOOL_EXTRA_FLAGS) $(am__append_6)
++libsodium_la_LDFLAGS = \
++	$(AM_LDFLAGS) \
++	-export-dynamic \
++	-no-undefined \
++	$(LIBTOOL_EXTRA_FLAGS)
++
+ libsodium_la_CPPFLAGS = \
+ 	$(LTDLINCL) \
+ 	-I$(srcdir)/include/sodium \
+ 	-I$(builddir)/include/sodium
+ 
+-@HAVE_LD_OUTPUT_DEF_TRUE@defexecdir = $(bindir)
+-@HAVE_LD_OUTPUT_DEF_TRUE@defexec_DATA = libsodium-$(DLL_VERSION).def
+-@HAVE_LD_OUTPUT_DEF_TRUE@CLEANFILES = $(defexec_DATA)
+ SUBDIRS = \
+ 	include
+ 
+@@ -3527,27 +3497,6 @@ clean-libtool:
+ 	-rm -rf randombytes/salsa20/.libs randombytes/salsa20/_libs
+ 	-rm -rf randombytes/sysrandom/.libs randombytes/sysrandom/_libs
+ 	-rm -rf sodium/.libs sodium/_libs
+-install-defexecDATA: $(defexec_DATA)
+-	@$(NORMAL_INSTALL)
+-	@list='$(defexec_DATA)'; test -n "$(defexecdir)" || list=; \
+-	if test -n "$$list"; then \
+-	  echo " $(MKDIR_P) '$(DESTDIR)$(defexecdir)'"; \
+-	  $(MKDIR_P) "$(DESTDIR)$(defexecdir)" || exit 1; \
+-	fi; \
+-	for p in $$list; do \
+-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+-	  echo "$$d$$p"; \
+-	done | $(am__base_list) | \
+-	while read files; do \
+-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(defexecdir)'"; \
+-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(defexecdir)" || exit $$?; \
+-	done
+-
+-uninstall-defexecDATA:
+-	@$(NORMAL_UNINSTALL)
+-	@list='$(defexec_DATA)'; test -n "$(defexecdir)" || list=; \
+-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+-	dir='$(DESTDIR)$(defexecdir)'; $(am__uninstall_files_from_dir)
+ 
+ # This directory's subdirectories are mostly independent; you can cd
+ # into them and run `make' without going through this Makefile.
+@@ -3741,12 +3690,9 @@ distdir: $(DISTFILES)
+ 	done
+ check-am: all-am
+ check: check-recursive
+-all-am: Makefile $(LTLIBRARIES) $(DATA)
++all-am: Makefile $(LTLIBRARIES)
+ installdirs: installdirs-recursive
+ installdirs-am:
+-	for dir in "$(DESTDIR)$(defexecdir)"; do \
+-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+-	done
+ install: install-recursive
+ install-exec: install-exec-recursive
+ install-data: install-data-recursive
+@@ -3769,7 +3715,6 @@ install-strip:
+ mostlyclean-generic:
+ 
+ clean-generic:
+-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+ 
+ distclean-generic:
+ 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+@@ -3951,7 +3896,7 @@ install-dvi: install-dvi-recursive
+ 
+ install-dvi-am:
+ 
+-install-exec-am: install-defexecDATA
++install-exec-am:
+ 
+ install-html: install-html-recursive
+ 
+@@ -3991,7 +3936,7 @@ ps: ps-recursive
+ 
+ ps-am:
+ 
+-uninstall-am: uninstall-defexecDATA
++uninstall-am:
+ 
+ .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
+ 	install-am install-strip tags-recursive
+@@ -4001,18 +3946,16 @@ uninstall-am: uninstall-defexecDATA
+ 	clean-noinstLTLIBRARIES ctags ctags-recursive distclean \
+ 	distclean-compile distclean-generic distclean-libtool \
+ 	distclean-tags distdir dvi dvi-am html html-am info info-am \
+-	install install-am install-data install-data-am \
+-	install-defexecDATA install-dvi install-dvi-am install-exec \
+-	install-exec-am install-html install-html-am install-info \
+-	install-info-am install-man install-pdf install-pdf-am \
+-	install-ps install-ps-am install-strip installcheck \
+-	installcheck-am installdirs installdirs-am maintainer-clean \
+-	maintainer-clean-generic mostlyclean mostlyclean-compile \
+-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+-	tags tags-recursive uninstall uninstall-am \
+-	uninstall-defexecDATA
+-
+-@HAVE_LD_OUTPUT_DEF_TRUE@libsodium-$(DLL_VERSION).def: libsodium.la
++	install install-am install-data install-data-am install-dvi \
++	install-dvi-am install-exec install-exec-am install-html \
++	install-html-am install-info install-info-am install-man \
++	install-pdf install-pdf-am install-ps install-ps-am \
++	install-strip installcheck installcheck-am installdirs \
++	installdirs-am maintainer-clean maintainer-clean-generic \
++	mostlyclean mostlyclean-compile mostlyclean-generic \
++	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
++	uninstall uninstall-am
++
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+diff --git a/src/encrypt.c b/src/encrypt.c
+index 9bd8d2c..6767024 100644
+--- a/src/encrypt.c
++++ b/src/encrypt.c
+@@ -145,22 +145,23 @@ static const CCAlgorithm supported_ciphers_applecc[CIPHER_NUM] =
+ 
+ static const int supported_ciphers_iv_size[CIPHER_NUM] =
+ {
+-    0,  0, 16, 16, 16, 16,  8, 16, 16, 16,  8, 8,  8,  8, 16 ,  8,  8
++    0, 0, 16, 16, 16, 16, 8, 16, 16, 16, 8, 8, 8, 8, 16, 8, 8
+ };
+ 
+ static const int supported_ciphers_key_size[CIPHER_NUM] =
+ {
+-    0, 16, 16, 16, 24, 32, 16, 16, 24, 32, 16, 8, 16, 16, 16 , 32, 32
++    0, 16, 16, 16, 24, 32, 16, 16, 24, 32, 16, 8, 16, 16, 16, 32, 32
+ };
+ 
+ static int crypto_stream_xor_ic(uint8_t *c, const uint8_t *m, uint64_t mlen,
+-        const uint8_t *n, uint64_t ic, const uint8_t *k, int method)
++                                const uint8_t *n, uint64_t ic, const uint8_t *k,
++                                int method)
+ {
+     switch (method) {
+-        case SALSA20:
+-            return crypto_stream_salsa20_xor_ic(c, m, mlen, n, ic, k);
+-        case CHACHA20:
+-            return crypto_stream_chacha20_xor_ic(c, m, mlen, n, ic, k);
++    case SALSA20:
++        return crypto_stream_salsa20_xor_ic(c, m, mlen, n, ic, k);
++    case CHACHA20:
++        return crypto_stream_chacha20_xor_ic(c, m, mlen, n, ic, k);
+     }
+     // always return 0
+     return 0;
+@@ -453,8 +454,12 @@ int rand_bytes(uint8_t *output, int len)
+ 
+         urand = fopen("/dev/urandom", "r");
+         if (urand) {
+-            fread(&rand_buffer.seed, sizeof(rand_buffer.seed), 1, urand);
++            int read = fread(&rand_buffer.seed, sizeof(rand_buffer.seed), 1,
++                             urand);
+             fclose(urand);
++            if (read <= 0) {
++                rand_buffer.seed = (uint64_t)clock();
++            }
+         } else {
+             rand_buffer.seed = (uint64_t)clock();
+         }
+@@ -687,8 +692,9 @@ void cipher_context_set_iv(cipher_ctx_t *ctx, uint8_t *iv, size_t iv_len,
+ 
+ void cipher_context_release(cipher_ctx_t *ctx)
+ {
+-    if (enc_method >= SALSA20)
++    if (enc_method >= SALSA20) {
+         return;
++    }
+ 
+ #ifdef USE_CRYPTO_APPLECC
+     cipher_cc_t *cc = &ctx->cc;
+@@ -748,11 +754,13 @@ char * ss_encrypt_all(int buf_size, char *plaintext, ssize_t *len, int method)
+ 
+         if (method >= SALSA20) {
+             crypto_stream_xor_ic((uint8_t *)(ciphertext + iv_len),
+-                    (const uint8_t *)plaintext, (uint64_t)(p_len), (const uint8_t *)iv,
+-                    0, enc_key, method);
++                                 (const uint8_t *)plaintext, (uint64_t)(p_len),
++                                 (const uint8_t *)iv,
++                                 0, enc_key, method);
+         } else {
+             err = cipher_context_update(&evp, (uint8_t *)(ciphertext + iv_len),
+-                    &c_len, (const uint8_t *)plaintext, p_len);
++                                        &c_len, (const uint8_t *)plaintext,
++                                        p_len);
+         }
+ 
+         if (!err) {
+@@ -809,7 +817,7 @@ char * ss_encrypt(int buf_size, char *plaintext, ssize_t *len,
+         if (enc_method >= SALSA20) {
+             int padding = ctx->counter % SODIUM_BLOCK_SIZE;
+             if (buf_len < iv_len + padding + c_len) {
+-                buf_len= max(iv_len + (padding + c_len) * 2, buf_size);
++                buf_len = max(iv_len + (padding + c_len) * 2, buf_size);
+                 ciphertext = realloc(ciphertext, buf_len);
+             }
+             if (padding) {
+@@ -818,15 +826,22 @@ char * ss_encrypt(int buf_size, char *plaintext, ssize_t *len,
+                 memset(plaintext, 0, padding);
+             }
+             crypto_stream_xor_ic((uint8_t *)(ciphertext + iv_len),
+-                    (const uint8_t *)plaintext, (uint64_t)(p_len + padding), (const uint8_t *)ctx->evp.iv,
+-                    ctx->counter / SODIUM_BLOCK_SIZE, enc_key, enc_method);
++                                 (const uint8_t *)plaintext,
++                                 (uint64_t)(p_len + padding),
++                                 (const uint8_t *)ctx->evp.iv,
++                                 ctx->counter / SODIUM_BLOCK_SIZE, enc_key,
++                                 enc_method);
+             ctx->counter += p_len;
+             if (padding) {
+-                memmove(ciphertext + iv_len, ciphertext + iv_len + padding, c_len);
++                memmove(ciphertext + iv_len, ciphertext + iv_len + padding,
++                        c_len);
+             }
+         } else {
+-            err = cipher_context_update(&ctx->evp, (uint8_t *)(ciphertext + iv_len),
+-                    &c_len, (const uint8_t *)plaintext, p_len);
++            err =
++                cipher_context_update(&ctx->evp,
++                                      (uint8_t *)(ciphertext + iv_len),
++                                      &c_len, (const uint8_t *)plaintext,
++                                      p_len);
+             if (!err) {
+                 free(ciphertext);
+                 free(plaintext);
+@@ -869,12 +884,13 @@ char * ss_decrypt_all(int buf_size, char *ciphertext, ssize_t *len, int method)
+ 
+         if (method >= SALSA20) {
+             crypto_stream_xor_ic((uint8_t *)plaintext,
+-                    (const uint8_t *)(ciphertext + iv_len), (uint64_t)(c_len - iv_len),
+-                    (const uint8_t *)iv, 0, enc_key, method);
++                                 (const uint8_t *)(ciphertext + iv_len),
++                                 (uint64_t)(c_len - iv_len),
++                                 (const uint8_t *)iv, 0, enc_key, method);
+         } else {
+             err = cipher_context_update(&evp, (uint8_t *)plaintext, &p_len,
+-                    (const uint8_t *)(ciphertext + iv_len),
+-                    c_len - iv_len);
++                                        (const uint8_t *)(ciphertext + iv_len),
++                                        c_len - iv_len);
+         }
+ 
+         if (!err) {
+@@ -932,21 +948,26 @@ char * ss_decrypt(int buf_size, char *ciphertext, ssize_t *len,
+                 plaintext = realloc(plaintext, buf_len);
+             }
+             if (padding) {
+-                ciphertext = realloc(ciphertext, max(c_len + padding, buf_size));
+-                memmove(ciphertext + iv_len + padding, ciphertext + iv_len, c_len - iv_len);
++                ciphertext =
++                    realloc(ciphertext, max(c_len + padding, buf_size));
++                memmove(ciphertext + iv_len + padding, ciphertext + iv_len,
++                        c_len - iv_len);
+                 memset(ciphertext + iv_len, 0, padding);
+             }
+             crypto_stream_xor_ic((uint8_t *)plaintext,
+-                    (const uint8_t *)(ciphertext + iv_len), (uint64_t)(c_len - iv_len + padding),
+-                    (const uint8_t *)ctx->evp.iv, ctx->counter / SODIUM_BLOCK_SIZE, enc_key, enc_method);
++                                 (const uint8_t *)(ciphertext + iv_len),
++                                 (uint64_t)(c_len - iv_len + padding),
++                                 (const uint8_t *)ctx->evp.iv,
++                                 ctx->counter / SODIUM_BLOCK_SIZE, enc_key,
++                                 enc_method);
+             ctx->counter += c_len - iv_len;
+             if (padding) {
+                 memmove(plaintext, plaintext + padding, p_len);
+             }
+         } else {
+             err = cipher_context_update(&ctx->evp, (uint8_t *)plaintext, &p_len,
+-                    (const uint8_t *)(ciphertext + iv_len),
+-                    c_len - iv_len);
++                                        (const uint8_t *)(ciphertext + iv_len),
++                                        c_len - iv_len);
+         }
+ 
+         if (!err) {
+@@ -1011,7 +1032,7 @@ void enc_key_init(int method, const char *pass)
+         cipher->iv_size = supported_ciphers_iv_size[method];
+ #endif
+     } else {
+-        cipher = (cipher_kt_t *) get_cipher_type(method);
++        cipher = (cipher_kt_t *)get_cipher_type(method);
+     }
+ 
+     if (cipher == NULL) {
+diff --git a/src/jconf.c b/src/jconf.c
+index 8ca0c07..d947ded 100644
+--- a/src/jconf.c
++++ b/src/jconf.c
+@@ -74,16 +74,18 @@ void parse_addr(const char *str, ss_addr_t *addr)
+         }
+     }
+     if (ret == -1) {
+-        if (ipv6)
++        if (ipv6) {
+             addr->host = ss_strndup(str + 1, strlen(str) - 2);
+-        else
++        } else {
+             addr->host = strdup(str);
++        }
+         addr->port = NULL;
+     } else {
+-        if (ipv6)
++        if (ipv6) {
+             addr->host = ss_strndup(str + 1, ret - 2);
+-        else
++        } else {
+             addr->host = ss_strndup(str, ret);
++        }
+         addr->port = strdup(str + ret + 1);
+     }
+ }
+diff --git a/src/jconf.h b/src/jconf.h
+index 6b8a38b..a3cf6de 100644
+--- a/src/jconf.h
++++ b/src/jconf.h
+@@ -25,6 +25,7 @@
+ #define MAX_REMOTE_NUM 10
+ #define MAX_CONF_SIZE 16 * 1024
+ #define DNS_THREAD_NUM 4
++#define MAX_CONNECT_TIMEOUT 10
+ 
+ typedef struct {
+     char *host;
+diff --git a/src/local.c b/src/local.c
+index 96659ff..0bde9f5 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -541,7 +541,9 @@ static void remote_timeout_cb(EV_P_ ev_timer *watcher, int revents)
+     struct remote *remote = remote_ctx->remote;
+     struct server *server = remote->server;
+ 
+-    LOGD("remote timeout");
++    if (verbose) {
++        LOGD("TCP connection timeout");
++    }
+ 
+     close_and_free_remote(EV_A_ remote);
+     close_and_free_server(EV_A_ server);
+@@ -688,9 +690,14 @@ static struct remote * new_remote(int fd, int timeout)
+     remote->fd = fd;
+     ev_io_init(&remote->recv_ctx->io, remote_recv_cb, fd, EV_READ);
+     ev_io_init(&remote->send_ctx->io, remote_send_cb, fd, EV_WRITE);
+-    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb, timeout, 0);
+-    ev_timer_init(&remote->recv_ctx->watcher, remote_timeout_cb, timeout,
+-                  timeout * 60);
++    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb,
++                  min(MAX_CONNECT_TIMEOUT,
++                      timeout),
++                  0);
++    ev_timer_init(&remote->recv_ctx->watcher, remote_timeout_cb,
++                  min(MAX_CONNECT_TIMEOUT,
++                      timeout),
++                  timeout);
+     remote->recv_ctx->remote = remote;
+     remote->send_ctx->remote = remote;
+     return remote;
+diff --git a/src/redir.c b/src/redir.c
+index 67e4a42..24d450f 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -270,8 +270,6 @@ static void remote_timeout_cb(EV_P_ ev_timer *watcher, int revents)
+     struct remote *remote = remote_ctx->remote;
+     struct server *server = remote->server;
+ 
+-    LOGD("remote timeout");
+-
+     ev_timer_stop(EV_A_ watcher);
+ 
+     if (server == NULL) {
+@@ -471,7 +469,8 @@ static struct remote * new_remote(int fd, int timeout)
+     remote->fd = fd;
+     ev_io_init(&remote->recv_ctx->io, remote_recv_cb, fd, EV_READ);
+     ev_io_init(&remote->send_ctx->io, remote_send_cb, fd, EV_WRITE);
+-    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb, timeout, 0);
++    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb,
++                  min(MAX_CONNECT_TIMEOUT, timeout), 0);
+     remote->recv_ctx->remote = remote;
+     remote->recv_ctx->connected = 0;
+     remote->send_ctx->remote = remote;
+diff --git a/src/server.c b/src/server.c
+index 3137678..21ab1b9 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -233,7 +233,7 @@ static struct remote *connect_to_remote(struct addrinfo *res,
+                            res->ai_addrlen);
+         if (s == -1) {
+             if (errno == EINPROGRESS || errno == EAGAIN
+-                    || errno == EWOULDBLOCK) {
++                || errno == EWOULDBLOCK) {
+                 // The remote server doesn't support tfo or it's the first connection to the server.
+                 // It will automatically fall back to conventional TCP.
+             } else if (errno == EOPNOTSUPP || errno == EPROTONOSUPPORT ||
+@@ -499,7 +499,9 @@ static void server_timeout_cb(EV_P_ ev_timer *watcher, int revents)
+     struct server *server = server_ctx->server;
+     struct remote *remote = server->remote;
+ 
+-    LOGE("TCP connection timeout");
++    if (verbose) {
++        LOGD("TCP connection timeout");
++    }
+ 
+     close_and_free_remote(EV_A_ remote);
+     close_and_free_server(EV_A_ server);
+@@ -803,7 +805,8 @@ static struct server * new_server(int fd, struct listen_ctx *listener)
+     ev_io_init(&server->recv_ctx->io, server_recv_cb, fd, EV_READ);
+     ev_io_init(&server->send_ctx->io, server_send_cb, fd, EV_WRITE);
+     ev_timer_init(&server->recv_ctx->watcher, server_timeout_cb,
+-                  listener->timeout, listener->timeout * 5);
++                  min(MAX_CONNECT_TIMEOUT,
++                      listener->timeout), listener->timeout);
+     server->recv_ctx->server = server;
+     server->recv_ctx->connected = 0;
+     server->send_ctx->server = server;
+diff --git a/src/tunnel.c b/src/tunnel.c
+index e1978bc..3a0d859 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -275,7 +275,9 @@ static void remote_timeout_cb(EV_P_ ev_timer *watcher, int revents)
+     struct remote *remote = remote_ctx->remote;
+     struct server *server = remote->server;
+ 
+-    LOGD("remote timeout");
++    if (verbose) {
++        LOGD("TCP connection timeout");
++    }
+ 
+     ev_timer_stop(EV_A_ watcher);
+ 
+@@ -466,7 +468,10 @@ static struct remote * new_remote(int fd, int timeout)
+     remote->fd = fd;
+     ev_io_init(&remote->recv_ctx->io, remote_recv_cb, fd, EV_READ);
+     ev_io_init(&remote->send_ctx->io, remote_send_cb, fd, EV_WRITE);
+-    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb, timeout, 0);
++    ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb,
++                  min(MAX_CONNECT_TIMEOUT,
++                      timeout),
++                  0);
+     remote->recv_ctx->remote = remote;
+     remote->recv_ctx->connected = 0;
+     remote->send_ctx->remote = remote;
+diff --git a/src/udprelay.c b/src/udprelay.c
+index 1b81dbd..6983f03 100644
+--- a/src/udprelay.c
++++ b/src/udprelay.c
+@@ -914,7 +914,7 @@ int init_udprelay(const char *server_host, const char *server_port,
+     setnonblocking(serverfd);
+ 
+     server_ctx = new_server_ctx(serverfd);
+-    server_ctx->timeout = timeout;
++    server_ctx->timeout = min(timeout, MAX_CONNECT_TIMEOUT);
+     server_ctx->method = method;
+     server_ctx->iface = iface;
+     server_ctx->conn_cache = conn_cache;
+diff --git a/src/utils.h b/src/utils.h
+index 118c398..e7023e6 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -93,22 +93,22 @@ extern FILE * logfile;
+ 
+ #define USE_SYSLOG(ident)
+ 
+-#define LOGD(format, ...)                                                     \
+-    do {                                                                      \
+-        time_t now = time(NULL);                                              \
+-        char timestr[20];                                                     \
+-        strftime(timestr, 20, TIME_FORMAT, localtime(&now));                  \
+-        fprintf(stderr, " %s INFO: " format "\n", timestr, ## __VA_ARGS__);   \
+-        fflush(stderr); }                                                     \
++#define LOGD(format, ...)                                                   \
++    do {                                                                    \
++        time_t now = time(NULL);                                            \
++        char timestr[20];                                                   \
++        strftime(timestr, 20, TIME_FORMAT, localtime(&now));                \
++        fprintf(stderr, " %s INFO: " format "\n", timestr, ## __VA_ARGS__); \
++        fflush(stderr); }                                                   \
+     while (0)
+ 
+-#define LOGE(format, ...)                                                      \
+-    do {                                                                       \
+-        time_t now = time(NULL);                                               \
+-        char timestr[20];                                                      \
+-        strftime(timestr, 20, TIME_FORMAT, localtime(&now));                   \
+-        fprintf(stderr, " %s ERROR: " format "\n", timestr, ## __VA_ARGS__);   \
+-        fflush(stderr); }                                                      \
++#define LOGE(format, ...)                                                    \
++    do {                                                                     \
++        time_t now = time(NULL);                                             \
++        char timestr[20];                                                    \
++        strftime(timestr, 20, TIME_FORMAT, localtime(&now));                 \
++        fprintf(stderr, " %s ERROR: " format "\n", timestr, ## __VA_ARGS__); \
++        fflush(stderr); }                                                    \
+     while (0)
+ 
+ #else
