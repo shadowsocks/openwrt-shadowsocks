@@ -86,7 +86,10 @@ ipset_r() {
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("add shadowsocks %s\n", $1)}')
 
-	echo -e "create shadowsocks hash:net\n$BODY" | ipset -R && \
+	ipset -! -R <<-EOF &&
+		create shadowsocks hash:net
+		$BODY
+EOF
 	iptables -t nat -A PREROUTING -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $LOCAL_PORT
