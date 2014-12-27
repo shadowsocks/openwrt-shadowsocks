@@ -125,6 +125,13 @@ start() {
 	[ "$tunnel_enable" = 1 ] && start_tunnel
 }
 
+boot() {
+	until iptables-save -t nat | grep -q "^-A zone_lan_prerouting"; do
+		sleep 1
+	done
+	start
+}
+
 stop() {
 	/usr/bin/ss-rules -f
 	service_stop /usr/bin/ss-redir

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 EXT_ARGS=""
+PREROUTING=PREROUTING
 
 usage() {
 	cat <<-EOF
@@ -39,21 +40,20 @@ get_ip() {
 flush_r() {
 	local IPT
 
-	while true; do
-		IPT=$(iptables-save | grep "^-A PREROUTING")
-		if [ -z "$IPT" ]; then
-			sleep 1
-			continue
-		fi
-		eval $(echo "$IPT" | grep "shadowsocks" | \
-			sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
-		if echo "$IPT" | grep -q "SHADOWSOCKS"; then
-			iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
-			iptables -t nat -F SHADOWSOCKS 2>/dev/null && \
-			iptables -t nat -X SHADOWSOCKS
-		fi
-		break
-	done
+	if iptables-save -t nat | grep -q "^:zone_lan_prerouting"; then
+		PREROUTING=zone_lan_prerouting
+	fi
+
+	IPT=$(iptables-save -t nat | grep -E "^-A $PREROUTING|^-A OUTPUT")
+	eval $(echo "$IPT" | grep "shadowsocks" | \
+		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
+
+	if echo "$IPT" | grep -q "SHADOWSOCKS"; then
+		iptables -t nat -D OUTPUT -p tcp -j SHADOWSOCKS 2>/dev/null
+		iptables -t nat -D $PREROUTING -p tcp -j SHADOWSOCKS 2>/dev/null
+		iptables -t nat -F SHADOWSOCKS 2>/dev/null && \
+		iptables -t nat -X SHADOWSOCKS
+	fi
 
 	if command -v ipset >/dev/null; then
 		ipset -X shadowsocks 2>/dev/null
@@ -63,19 +63,27 @@ flush_r() {
 }
 
 iptab_r() {
-	local LOCAL_IP BODY
+	local LOCAL_IP BODY REDIRECT
 	LOCAL_IP=$(uci get network.lan.ipaddr 2>/dev/null)
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
 			{printf("-A SHADOWSOCKS -d %s -j RETURN\n", $1)}')
 
+	if [ -n "$LOCAL_IP" ]; then
+		REDIRECT="-A SHADOWSOCKS -p tcp $EXT_ARGS \
+			-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT"
+	else
+		REDIRECT="-A SHADOWSOCKS -p tcp $EXT_ARGS \
+			-j REDIRECT --to-ports $LOCAL_PORT"
+	fi
+
 	iptables-restore -n <<-EOF
 		*nat
 		:SHADOWSOCKS - [0:0]
 		$BODY
-		-A SHADOWSOCKS -p tcp $EXT_ARGS \
-			-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
-		-A PREROUTING -p tcp -j SHADOWSOCKS
+		$REDIRECT
+		-A OUTPUT -p tcp -j SHADOWSOCKS
+		-A $PREROUTING -p tcp -j SHADOWSOCKS
 		COMMIT
 EOF
 	exit $?
@@ -90,7 +98,10 @@ ipset_r() {
 		create shadowsocks hash:net
 		$BODY
 EOF
-	iptables -t nat -A PREROUTING -p tcp $EXT_ARGS \
+	iptables -t nat -A OUTPUT -p tcp $EXT_ARGS \
+		-m set ! --match-set shadowsocks dst \
+		-j REDIRECT --to-ports $LOCAL_PORT
+	iptables -t nat -A $PREROUTING -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $LOCAL_PORT
 
