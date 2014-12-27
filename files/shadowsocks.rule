@@ -18,13 +18,18 @@ usage() {
 EOF
 }
 
+loger() {
+	# 1.alert 2.crit 3.err 4.warn 5.notice 6.info 7.debug
+	logger -st ss-rules[$$] -p$1 $2
+}
+
 get_ip() {
 	local COUNT=0
 	local NS=114.114.114.114
 
 	until ping -c1 $NS >/dev/null 2>&1; do
 		if [ "$COUNT" -ge 6 ]; then
-			echo "Operation timeout."
+			loger 3 "Operation timeout!"
 			exit 1
 		fi
 		COUNT=$(($COUNT + 1))
@@ -64,6 +69,7 @@ flush_r() {
 
 iptab_r() {
 	local LOCAL_IP BODY REDIRECT
+
 	LOCAL_IP=$(uci get network.lan.ipaddr 2>/dev/null)
 	BODY=$(echo -e "$IPLIST" | \
 		awk '$1 ~ /^([0-9]{1,3}\.){3}[0-9]{1,3}/ \
@@ -100,7 +106,7 @@ ipset_r() {
 EOF
 	iptables -t nat -A OUTPUT -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
-		-j REDIRECT --to-ports $LOCAL_PORT
+		-j REDIRECT --to-ports $LOCAL_PORT && \
 	iptables -t nat -A $PREROUTING -p tcp $EXT_ARGS \
 		-m set ! --match-set shadowsocks dst \
 		-j REDIRECT --to-ports $LOCAL_PORT
@@ -152,10 +158,10 @@ if [ -z "$SERVER" ] || [ -z "$LOCAL_PORT" ]; then
 fi
 
 if !(echo "$SERVER" | grep -qE "^([0-9]{1,3}\.){3}[0-9]{1,3}$"); then
-	echo "The $SERVER is not ip, trying to resolve it."
+	loger 5 "The $SERVER is not ip, trying to resolve it."
 	SERVER=$(get_ip $SERVER)
 	[ -z "$SERVER" ] && exit 1
-	echo "Server IP: $SERVER."
+	loger 5 "Server IP: $SERVER."
 fi
 
 IPLIST="$SERVER\n0.0.0.0/8\n10.0.0.0/8
