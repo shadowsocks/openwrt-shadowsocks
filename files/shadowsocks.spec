@@ -4,7 +4,7 @@ START=90
 STOP=15
 
 SERVICE_USE_PID=1
-SERVICE_WRITE_PID=1
+SERVICE_WRITE_PID=0
 SERVICE_DAEMONIZE=1
 EXTRA_COMMANDS="rules"
 
@@ -79,7 +79,8 @@ start_rules() {
 start_redir() {
 	if [ "$use_conf_file" = 1 ]; then
 		service_start /usr/bin/ss-redir \
-			-c "$config_file"
+			-c "$config_file" \
+			-f /var/run/ss-redir.pid
 	else
 		check_args s p k m
 		service_start /usr/bin/ss-redir \
@@ -87,7 +88,8 @@ start_redir() {
 			-p "$server_port" \
 			-l "$local_port" \
 			-k "$password" \
-			-m "$encrypt_method"
+			-m "$encrypt_method" \
+			-f /var/run/ss-redir.pid
 	fi
 	return $?
 }
@@ -98,6 +100,7 @@ start_tunnel() {
 			-c "$config_file" \
 			-l "$tunnel_port" \
 			-L "$tunnel_forward" \
+			-f /var/run/ss-tunnel.pid \
 			-u
 	else
 		check_args s p k m
@@ -108,6 +111,7 @@ start_tunnel() {
 			-m "$encrypt_method" \
 			-l "$tunnel_port" \
 			-L "$tunnel_forward" \
+			-f /var/run/ss-tunnel.pid \
 			-u
 	fi
 	return $?
