@@ -5,8 +5,8 @@ Shadowsocks-libev for OpenWrt
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: 1.6.1-2  [预编译 IPK 下载][2]  
- 可编译两种版本  
+ 当前版本: 1.6.1-2  
+ 可编译两种版本, [预编译 IPK 下载][2]  
 
  - shadowsocks-libev
 
