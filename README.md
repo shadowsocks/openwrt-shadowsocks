@@ -1,12 +1,12 @@
-OpenWrt's ShadowSocks Makefile
+Shadowsocks-libev for OpenWrt
 ===
 
- > 当前版本: 1.6.1-2  
-
-功能说明
+简介
 ---
 
- > 可编译两种版本 
+ 本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
+ 当前版本: 1.6.1-2  [预编译 IPK 下载][2]  
+ 可编译两种版本  
 
  - shadowsocks-libev
 
@@ -24,53 +24,40 @@ OpenWrt's ShadowSocks Makefile
    > `ss-tunnel` 提供 UDP 转发  
    > 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面  
 
-编译说明
+编译
 ---
 
- - 从 OpenWrt 的 [SDK][S] 编译, [预编译 IPK 下载][2]
+ - 从 OpenWrt 的 [SDK][S] 编译
 
  > ```bash
  > # 以 ar71xx 平台为例
  > tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
  > cd OpenWrt-SDK-ar71xx-*
  > # 获取 Makefile
- > git clone https://github.com/aa65535/openwrt-shadowsocks.git package/shadowsocks-libev
+ > git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
  > # 选择要编译的包 Network -> shadowsocks-libev
  > make menuconfig
  > # 开始编译
  > make package/shadowsocks-libev/compile V=99
  > ```
 
-配置说明
+配置
 ---
 
  - shadowsocks-libev 配置文件: `/etc/shadowsocks.json`
 
  - shadowsocks-libev-spec 配置文件: `/etc/shadowsocks/config.json`
 
- - [Ignore List][3]: `/etc/shadowsocks/ignore.list` 可以使用下面命令更新
+ - [IP 忽略列表][3]: `/etc/shadowsocks/ignore.list` 可以使用下面命令更新
     > ```bash
     > wget -O- 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
     > ```
 
  - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
 
-相关项目
----
 
- Name                     | Description
- -------------------------|-----------------------------------
- [openwrt-chinadns][5]    | OpenWrt's ChinaDNS-C Makefile
- [openwrt-dnsmasq][6]     | OpenWrt's Dnsmasq Patch & Makefile
- [openwrt-shadowvpn][7]   | OpenWrt's ShadowVPN Makefile
- [openwrt-dist-luci][L]   | LuCI Applications of OpenWrt-dist
-
-
-  [1]: https://github.com/madeye/shadowsocks-libev
+  [1]: https://github.com/shadowsocks/shadowsocks-libev
   [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/
-  [3]: https://github.com/aa65535/openwrt-shadowsocks/blob/master/files/shadowsocks.list
-  [5]: https://github.com/aa65535/openwrt-chinadns
-  [6]: https://github.com/aa65535/openwrt-dnsmasq
-  [7]: https://github.com/aa65535/openwrt-shadowvpn
-  [S]: http://downloads.openwrt.org/snapshots/trunk/
+  [3]: https://github.com/shadowsocks/openwrt-shadowsocks/blob/master/files/shadowsocks.list
+  [S]: http://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
   [L]: https://github.com/aa65535/openwrt-dist-luci
