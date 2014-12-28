@@ -50,15 +50,10 @@ flush_r() {
 	fi
 
 	IPT=$(iptables-save -t nat | grep -E "^-A $PREROUTING|^-A OUTPUT")
-	eval $(echo "$IPT" | grep "shadowsocks" | \
+	eval $(echo "$IPT" | grep -i "shadowsocks" | \
 		sed 's#^-A#-D#g' | awk '{printf("iptables -t nat %s;\n",$0)}')
-
-	if echo "$IPT" | grep -q "SHADOWSOCKS"; then
-		iptables -t nat -D OUTPUT -p tcp -j SHADOWSOCKS 2>/dev/null
-		iptables -t nat -D $PREROUTING -p tcp -j SHADOWSOCKS 2>/dev/null
-		iptables -t nat -F SHADOWSOCKS 2>/dev/null && \
-		iptables -t nat -X SHADOWSOCKS
-	fi
+	iptables -t nat -F SHADOWSOCKS 2>/dev/null && \
+	iptables -t nat -X SHADOWSOCKS
 
 	if command -v ipset >/dev/null; then
 		ipset -X shadowsocks 2>/dev/null
