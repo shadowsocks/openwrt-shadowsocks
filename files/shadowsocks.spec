@@ -21,9 +21,8 @@ get_args() {
 	config_get_bool tunnel_enable $1 tunnel_enable
 	config_get tunnel_port $1 tunnel_port
 	config_get tunnel_forward $1 tunnel_forward
-	config_get ac_mode $1 ac_mode
-	config_get accept_ip $1 accept_ip
-	config_get reject_ip $1 reject_ip
+	config_get lan_ac_mode $1 lan_ac_mode
+	config_get lan_ac_ip $1 lan_ac_ip
 	: ${local_port:=1080}
 	: ${tunnel_port:=5353}
 	: ${tunnel_forward:=8.8.4.4:53}
@@ -53,25 +52,29 @@ check_args() {
 }
 
 start_rules() {
-	local ext_args
-	if [ "$ac_mode" = 1 -a -n "$accept_ip" ]; then
-		ext_args="-s $(echo $accept_ip | tr ' ' ',')"
+	local ac_args
+
+	if [ -n "$lan_ac_ip" ]; then
+		case $lan_ac_mode in
+			1) ac_args="w$lan_ac_ip"
+			;;
+			2) ac_args="b$lan_ac_ip"
+			;;
+		esac
 	fi
-	if [ "$ac_mode" = 2 -a -n "$reject_ip" ]; then
-		ext_args="! -s $reject_ip"
-	fi
+
 	if [ "$use_conf_file" = 1 ]; then
 		/usr/bin/ss-rules \
 			-c "$config_file" \
 			-i "$ignore_list" \
-			-e "$ext_args"
+			-a "$ac_args"
 	else
 		check_args s
 		/usr/bin/ss-rules \
 			-s "$server" \
 			-l "$local_port" \
 			-i "$ignore_list" \
-			-e "$ext_args"
+			-a "$ac_args"
 	fi
 	return $?
 }
