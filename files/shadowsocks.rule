@@ -69,7 +69,7 @@ iptab_r() {
 		*nat
 		:SS_SPEC_WAN_AC - [0:0]
 		$(echo -e "$IPLIST" | \
-			sed -e "s/^/-A SS_SPEC_WAN_AC -d /g" -e "s/$/ -j RETURN/")
+			sed -e "s/^/-A SS_SPEC_WAN_AC -d /" -e "s/$/ -j RETURN/")
 		COMMIT
 EOF
 	return $?
@@ -78,7 +78,7 @@ EOF
 ipset_r() {
 	ipset -! -R <<-EOF &&
 		create shadowsocks hash:net
-		$(echo -e "$IPLIST" | sed -e "s/^/add shadowsocks /g")
+		$(echo -e "$IPLIST" | sed -e "s/^/add shadowsocks /")
 EOF
 
 	iptables-restore -n <<-EOF
@@ -91,7 +91,7 @@ EOF
 }
 
 ac_rule() {
-	local S1 S2
+	local S1 S2 i
 
 	S1=RETURN
 	S2=SS_SPEC_WAN_AC
