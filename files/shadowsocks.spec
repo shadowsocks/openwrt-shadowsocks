@@ -25,7 +25,7 @@ get_args() {
 	config_get lan_ac_mode $1 lan_ac_mode
 	config_get lan_ac_ip $1 lan_ac_ip
 	: ${local_port:=1080}
-	: ${tunnel_port:=5353}
+	: ${tunnel_port:=5300}
 	: ${tunnel_forward:=8.8.4.4:53}
 	: ${config_file:=/etc/shadowsocks/config.json}
 }
