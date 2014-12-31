@@ -7,6 +7,7 @@ SERVICE_USE_PID=1
 SERVICE_WRITE_PID=1
 SERVICE_DAEMONIZE=1
 EXTRA_COMMANDS="rules"
+CONFIG_FILE=/var/etc/shadowsocks.json
 
 get_args() {
 	config_get_bool enable $1 enable
@@ -63,56 +64,25 @@ start_rules() {
 		esac
 	fi
 
-	if [ "$use_conf_file" = 1 ]; then
-		/usr/bin/ss-rules \
-			-c "$config_file" \
-			-i "$ignore_list" \
-			-a "$ac_args"
-	else
-		check_args s
-		/usr/bin/ss-rules \
-			-s "$server" \
-			-l "$local_port" \
-			-i "$ignore_list" \
-			-a "$ac_args"
-	fi
+	/usr/bin/ss-rules \
+		-c "$CONFIG_FILE" \
+		-i "$ignore_list" \
+		-a "$ac_args"
 	return $?
 }
 
 start_redir() {
-	if [ "$use_conf_file" = 1 ]; then
-		service_start /usr/bin/ss-redir \
-			-c "$config_file"
-	else
-		check_args s p k m
-		service_start /usr/bin/ss-redir \
-			-s "$server" \
-			-p "$server_port" \
-			-l "$local_port" \
-			-k "$password" \
-			-m "$encrypt_method"
-	fi
+	service_start /usr/bin/ss-redir \
+		-c "$CONFIG_FILE"
 	return $?
 }
 
 start_tunnel() {
-	if [ "$use_conf_file" = 1 ]; then
-		service_start /usr/bin/ss-tunnel \
-			-c "$config_file" \
-			-l "$tunnel_port" \
-			-L "$tunnel_forward" \
-			-u
-	else
-		check_args s p k m
-		service_start /usr/bin/ss-tunnel \
-			-s "$server" \
-			-p "$server_port" \
-			-k "$password" \
-			-m "$encrypt_method" \
-			-l "$tunnel_port" \
-			-L "$tunnel_forward" \
-			-u
-	fi
+	service_start /usr/bin/ss-tunnel \
+		-c "$CONFIG_FILE" \
+		-l "$tunnel_port" \
+		-L "$tunnel_forward" \
+		-u
 	return $?
 }
 
@@ -120,6 +90,25 @@ rules() {
 	config_load shadowsocks
 	config_foreach get_args shadowsocks
 	[ "$enable" = 1 ] || exit 0
+	if [ "$use_conf_file" = 1 ]; then
+		cat $config_file >$CONFIG_FILE
+	else
+		check_args s p k m
+		cat <<-EOF |
+			{
+			    "server": "|SERVER|",
+			    "server_port": |SERVER_PORT|,
+			    "local_port": |LOCAL_PORT|,
+			    "password": "|PASSWORD|",
+			    "method": "|METHOD|"
+			}
+EOF
+		sed -e "s#|SERVER|#$server#" \
+			-e "s#|SERVER_PORT|#$server_port#" \
+			-e "s#|LOCAL_PORT|#$local_port#" \
+			-e "s#|PASSWORD|#$password#" \
+			-e "s#|METHOD|#$encrypt_method#" >$CONFIG_FILE
+	fi
 	start_rules
 }
 
@@ -139,4 +128,5 @@ stop() {
 	/usr/bin/ss-rules -f
 	service_stop /usr/bin/ss-redir
 	service_stop /usr/bin/ss-tunnel
+	rm -f $CONFIG_FILE
 }
