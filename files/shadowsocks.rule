@@ -1,8 +1,5 @@
 #!/bin/sh
 
-EXT_ARGS=""
-PREROUTING=PREROUTING
-
 usage() {
 	cat <<-EOF
 		Usage: ss-rules [options]
@@ -46,8 +43,11 @@ resolve_ip() {
 
 flush_r() {
 	local IPT=$(iptables-save -t nat)
+
 	if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
-		PREROUTING=zone_lan_prerouting
+		ROUTING=zone_lan_prerouting
+	else
+		ROUTING=PREROUTING
 	fi
 
 	eval $(echo "$IPT" | grep "\-j SS_SPEC_[WL]AN_AC" | \
@@ -114,7 +114,7 @@ ac_rule() {
 			echo "-A SS_SPEC_LAN_AC -p tcp -s $i -j $S1"; done)
 		-A SS_SPEC_LAN_AC -p tcp -j $S2
 		-A OUTPUT -p tcp $EXT_ARGS -j SS_SPEC_WAN_AC
-		-A $PREROUTING -p tcp $EXT_ARGS -j SS_SPEC_LAN_AC
+		-A $ROUTING -p tcp $EXT_ARGS -j SS_SPEC_LAN_AC
 		COMMIT
 EOF
 	return $?
@@ -135,7 +135,7 @@ while getopts ":s:l:c:i:e:a:f" arg; do
 			IGNORE=$OPTARG
 			;;
 		e)
-			EXT_ARGS="$EXT_ARGS $OPTARG"
+			EXT_ARGS=$OPTARG
 			;;
 		a)
 			LAN_AC_IP=$OPTARG
