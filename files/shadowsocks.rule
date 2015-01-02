@@ -50,7 +50,7 @@ flush_r() {
 		PREROUTING=zone_lan_prerouting
 	fi
 
-	eval $(echo "$IPT" | grep "SS_SPEC_[WL]AN_AC$" | \
+	eval $(echo "$IPT" | grep "\-j SS_SPEC_[WL]AN_AC" | \
 		sed -e 's/^-A/iptables -t nat -D/' -e 's/$/;/')
 	iptables -t nat -F SS_SPEC_LAN_AC 2>/dev/null && \
 	iptables -t nat -X SS_SPEC_LAN_AC
