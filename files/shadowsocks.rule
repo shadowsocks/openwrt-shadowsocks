@@ -47,11 +47,9 @@ flush_r() {
 
 	if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
 		ROUTING=zone_lan_prerouting
-	else
-		ROUTING=PREROUTING
 	fi
 
-	eval $(echo "$IPT" | grep "\-j SS_SPEC_[WL]AN_AC" | \
+	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
 		sed -e 's/^-A/iptables -t nat -D/' -e 's/$/;/')
 	iptables -t nat -F SS_SPEC_LAN_AC 2>/dev/null && \
 	iptables -t nat -X SS_SPEC_LAN_AC
@@ -85,7 +83,7 @@ EOF
 	iptables-restore -n <<-EOF
 		*nat
 		:SS_SPEC_WAN_AC - [0:0]
-		-A SS_SPEC_WAN_AC -p tcp -m set --match-set shadowsocks dst -j RETURN
+		-A SS_SPEC_WAN_AC -m set --match-set shadowsocks dst -j RETURN
 		COMMIT
 EOF
 	return $?
@@ -111,13 +109,18 @@ ac_rule() {
 		*nat
 		:SS_SPEC_LAN_AC - [0:0]
 		$(for i in ${LAN_AC_IP:1}; do
-			echo "-A SS_SPEC_LAN_AC -p tcp -s $i -j $S1"; done)
-		-A SS_SPEC_LAN_AC -p tcp -j $S2
-		-A $ROUTING -p tcp $EXT_ARGS -j SS_SPEC_LAN_AC
+			echo "-A SS_SPEC_LAN_AC -s $i -j $S1"; done)
+		-A SS_SPEC_LAN_AC -j $S2
 		COMMIT
 EOF
 	if [ "$OUTPUT" = 1 ]; then
-		iptables -t nat -A OUTPUT -p tcp $EXT_ARGS -j SS_SPEC_WAN_AC
+		iptables -t nat -A OUTPUT -p tcp $EXT_ARGS \
+			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
+	fi
+
+	if [ -n "$ROUTING" ]; then
+		iptables -t nat -A $ROUTING -p tcp $EXT_ARGS \
+			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_LAN_AC
 	fi
 	return $?
 }
