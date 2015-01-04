@@ -67,7 +67,8 @@ start_rules() {
 	/usr/bin/ss-rules \
 		-c "$CONFIG_FILE" \
 		-i "$ignore_list" \
-		-a "$ac_args"
+		-a "$ac_args" \
+		-o
 	return $?
 }
 

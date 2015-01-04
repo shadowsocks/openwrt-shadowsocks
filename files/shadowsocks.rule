@@ -13,6 +13,7 @@ usage() {
 		    -a <lan_ips>            lan ip of access control, need a prefix to
 		                            define access control mode
 		    -e <extra_options>      extra options of iptables
+		    -o                      apply the rules to the OUTPUT chain
 		    -f                      flush the rules
 EOF
 }
@@ -91,10 +92,9 @@ EOF
 }
 
 ac_rule() {
-	local S1 S2 i
+	local S1=RETURN
+	local S2=SS_SPEC_WAN_AC
 
-	S1=RETURN
-	S2=SS_SPEC_WAN_AC
 	if echo $LAN_AC_IP | grep -qi "^w"; then
 		S1=SS_SPEC_WAN_AC
 		S2=RETURN
@@ -107,20 +107,22 @@ ac_rule() {
 		-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
 	} || return 1
 
-	iptables-restore -n <<-EOF
+	iptables-restore -n <<-EOF || return 1
 		*nat
 		:SS_SPEC_LAN_AC - [0:0]
 		$(for i in ${LAN_AC_IP:1}; do
 			echo "-A SS_SPEC_LAN_AC -p tcp -s $i -j $S1"; done)
 		-A SS_SPEC_LAN_AC -p tcp -j $S2
-		-A OUTPUT -p tcp $EXT_ARGS -j SS_SPEC_WAN_AC
 		-A $ROUTING -p tcp $EXT_ARGS -j SS_SPEC_LAN_AC
 		COMMIT
 EOF
+	if [ "$OUTPUT" = 1 ]; then
+		iptables -t nat -A OUTPUT -p tcp $EXT_ARGS -j SS_SPEC_WAN_AC
+	fi
 	return $?
 }
 
-while getopts ":s:l:c:i:e:a:f" arg; do
+while getopts ":s:l:c:i:e:a:of" arg; do
 	case $arg in
 		s)
 			SERVER=$OPTARG
@@ -139,6 +141,9 @@ while getopts ":s:l:c:i:e:a:f" arg; do
 			;;
 		a)
 			LAN_AC_IP=$OPTARG
+			;;
+		o)
+			OUTPUT=1
 			;;
 		f)
 			flush_r
