@@ -90,6 +90,7 @@ rules() {
 	config_load shadowsocks
 	config_foreach get_args shadowsocks
 	[ "$enable" = 1 ] || exit 0
+	mkdir -p $(dirname $CONFIG_FILE)
 	if [ "$use_conf_file" = 1 ]; then
 		cat $config_file >$CONFIG_FILE
 	else
