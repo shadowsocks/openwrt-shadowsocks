@@ -9,17 +9,13 @@ SERVICE_DAEMONIZE=1
 CONFIG=/etc/shadowsocks.json
 
 start() {
-	# Client Mode
 	service_start /usr/bin/ss-local -c $CONFIG
-
-	# Proxy Mode
 	#service_start /usr/bin/ss-redir -c $CONFIG
+	#service_start /usr/bin/ss-tunnel -c $CONFIG -l 5353 -L 8.8.8.8:53 -u
 }
 
 stop() {
-	# Client Mode
 	service_stop /usr/bin/ss-local
-
-	# Proxy Mode
 	#service_stop /usr/bin/ss-redir
+	#service_start /usr/bin/ss-tunnel
 }
