@@ -17,6 +17,7 @@ get_args() {
 	config_get server_port $1 server_port
 	config_get local_port $1 local_port
 	config_get password $1 password
+	config_get timeout $1 timeout
 	config_get encrypt_method $1 encrypt_method
 	config_get ignore_list $1 ignore_list
 	config_get_bool tunnel_enable $1 tunnel_enable
@@ -26,6 +27,7 @@ get_args() {
 	config_get lan_ac_ip $1 lan_ac_ip
 	config_get wan_bp_ip $1 wan_bp_ip
 	config_get wan_fw_ip $1 wan_fw_ip
+	: ${timeout:=60}
 	: ${local_port:=1080}
 	: ${tunnel_port:=5300}
 	: ${tunnel_forward:=8.8.4.4:53}
@@ -34,6 +36,7 @@ get_args() {
 
 check_args() {
 	local ERR="not defined"
+
 	while [ -n "$1" ]; do
 		case $1 in
 			s)
@@ -65,7 +68,6 @@ start_rules() {
 			;;
 		esac
 	fi
-
 	/usr/bin/ss-rules \
 		-c "$CONFIG_FILE" \
 		-i "$ignore_list" \
@@ -96,6 +98,7 @@ rules() {
 	config_foreach get_args shadowsocks
 	[ "$enable" = 1 ] || exit 0
 	mkdir -p $(dirname $CONFIG_FILE)
+
 	if [ "$use_conf_file" = 1 ]; then
 		cat $config_file >$CONFIG_FILE
 	else
@@ -106,6 +109,7 @@ rules() {
 			    "server_port": |SERVER_PORT|,
 			    "local_port": |LOCAL_PORT|,
 			    "password": "|PASSWORD|",
+			    "timeout": |TIMEOUT|,
 			    "method": "|METHOD|"
 			}
 EOF
@@ -113,6 +117,7 @@ EOF
 			-e "s#|SERVER_PORT|#$server_port#" \
 			-e "s#|LOCAL_PORT|#$local_port#" \
 			-e "s#|PASSWORD|#$password#" \
+			-e "s#|TIMEOUT|#$timeout#" \
 			-e "s#|METHOD|#$encrypt_method#" >$CONFIG_FILE
 	fi
 	start_rules

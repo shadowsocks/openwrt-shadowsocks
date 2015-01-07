@@ -9,12 +9,12 @@ usage() {
 		    -s <server_host>        hostname or ip of shadowsocks remote server
 		    -l <local_port>         port number of shadowsocks local server
 		    -c <config_file>        config file of shadowsocks
-		    -i <ignore_list_file>   config file of ip ignore list
+		    -i <ip_list_file>       a file content is bypassed ip list
 		    -a <lan_ips>            lan ip of access control, need a prefix to
 		                            define access control mode
 		    -b <wan_ips>            wan ip of will be bypassed
 		    -w <wan_ips>            wan ip of will be forwarded
-		    -e <extra_options>      extra options of iptables
+		    -e <extra_options>      extra options for iptables
 		    -o                      apply the rules to the OUTPUT chain
 		    -f                      flush the rules
 EOF
