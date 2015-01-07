@@ -12,6 +12,8 @@ usage() {
 		    -i <ignore_list_file>   config file of ip ignore list
 		    -a <lan_ips>            lan ip of access control, need a prefix to
 		                            define access control mode
+		    -b <wan_ips>            wan ip of will be bypassed
+		    -w <wan_ips>            wan ip of will be forwarded
 		    -e <extra_options>      extra options of iptables
 		    -o                      apply the rules to the OUTPUT chain
 		    -f                      flush the rules
@@ -48,16 +50,18 @@ flush_r() {
 	if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
 		ROUTING=zone_lan_prerouting
 	fi
-
 	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
 		sed -e 's/^-A/iptables -t nat -D/' -e 's/$/;/')
 	iptables -t nat -F SS_SPEC_LAN_AC 2>/dev/null && \
 	iptables -t nat -X SS_SPEC_LAN_AC
 	iptables -t nat -F SS_SPEC_WAN_AC 2>/dev/null && \
 	iptables -t nat -X SS_SPEC_WAN_AC
+	iptables -t nat -F SS_SPEC_WAN_FW 2>/dev/null && \
+	iptables -t nat -X SS_SPEC_WAN_FW
 
 	if command -v ipset >/dev/null; then
-		ipset -X shadowsocks 2>/dev/null
+		ipset -X ss_spec_wan_ac 2>/dev/null
+		ipset -X ss_spec_wan_fw 2>/dev/null
 		return 0
 	fi
 	return 1
@@ -67,8 +71,11 @@ iptab_r() {
 	iptables-restore -n <<-EOF
 		*nat
 		:SS_SPEC_WAN_AC - [0:0]
+		$(for ip in $WAN_FW_IP; do
+			echo "-A SS_SPEC_WAN_AC -d $ip -j SS_SPEC_WAN_FW"; done)
 		$(echo -e "$IPLIST" | \
 			sed -e "s/^/-A SS_SPEC_WAN_AC -d /" -e "s/$/ -j RETURN/")
+		-A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
 		COMMIT
 EOF
 	return $?
@@ -76,16 +83,31 @@ EOF
 
 ipset_r() {
 	ipset -! -R <<-EOF &&
-		create shadowsocks hash:net
-		$(echo -e "$IPLIST" | sed -e "s/^/add shadowsocks /")
+		create ss_spec_wan_ac hash:net
+		create ss_spec_wan_fw hash:net
+		$(echo -e "$IPLIST" | sed -e "s/^/add ss_spec_wan_ac /")
+		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_fw $ip"; done)
 EOF
-
 	iptables-restore -n <<-EOF
 		*nat
 		:SS_SPEC_WAN_AC - [0:0]
-		-A SS_SPEC_WAN_AC -m set --match-set shadowsocks dst -j RETURN
+		-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_fw dst \
+			-j SS_SPEC_WAN_FW
+		-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_ac dst -j RETURN
+		-A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
 		COMMIT
 EOF
+	return $?
+}
+
+fw_rule() {
+	iptables -t nat -N SS_SPEC_WAN_FW
+	iptables -t nat -A SS_SPEC_WAN_FW -p tcp \
+		-j REDIRECT --to-ports $LOCAL_PORT 2>/dev/null || {
+	[ -n "$LOCAL_IP" ] && \
+	iptables -t nat -A SS_SPEC_WAN_FW -p tcp \
+		-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
+	} || return 1
 	return $?
 }
 
@@ -97,19 +119,11 @@ ac_rule() {
 		S1=SS_SPEC_WAN_AC
 		S2=RETURN
 	fi
-
-	iptables -t nat -A SS_SPEC_WAN_AC -p tcp \
-		-j REDIRECT --to-ports $LOCAL_PORT 2>/dev/null || {
-	[ -n "$LOCAL_IP" ] && \
-	iptables -t nat -A SS_SPEC_WAN_AC -p tcp \
-		-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
-	} || return 1
-
 	iptables-restore -n <<-EOF || return 1
 		*nat
 		:SS_SPEC_LAN_AC - [0:0]
-		$(for i in ${LAN_AC_IP:1}; do
-			echo "-A SS_SPEC_LAN_AC -s $i -j $S1"; done)
+		$(for ip in ${LAN_AC_IP:1}; do
+			echo "-A SS_SPEC_LAN_AC -s $ip -j $S1"; done)
 		-A SS_SPEC_LAN_AC -j $S2
 		COMMIT
 EOF
@@ -125,7 +139,7 @@ EOF
 	return $?
 }
 
-while getopts ":s:l:c:i:e:a:of" arg; do
+while getopts ":s:l:c:i:e:a:b:w:of" arg; do
 	case $arg in
 		s)
 			SERVER=$OPTARG
@@ -144,6 +158,12 @@ while getopts ":s:l:c:i:e:a:of" arg; do
 			;;
 		a)
 			LAN_AC_IP=$OPTARG
+			;;
+		b)
+			WAN_BP_IP=$OPTARG
+			;;
+		w)
+			WAN_FW_IP=$OPTARG
 			;;
 		o)
 			OUTPUT=1
@@ -188,10 +208,19 @@ LOCAL_IP=$(uci get network.lan.ipaddr 2>/dev/null)
 IPLIST="$SERVER\n0.0.0.0/8\n10.0.0.0/8\n127.0.0.0/8
 169.254.0.0/16\n172.16.0.0/12\n192.168.0.0/16\n224.0.0.0/4\n240.0.0.0/4"
 
-if [ -f "$IGNORE" ]; then
-	IPLIST="$IPLIST\n$(cat $IGNORE | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}")"
+if [ -n "$WAN_BP_IP" ]; then
+	IPLIST="$IPLIST\n$(for ip in $WAN_BP_IP; do echo $ip; done)"
 fi
 
-flush_r && ipset_r || iptab_r && ac_rule
+if [ -f "$IGNORE" ]; then
+	IPLIST="$IPLIST\n$(cat $IGNORE 2>/dev/null)"
+fi
+IPLIST=$(echo -e "$IPLIST" | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}")
+
+flush_r && {
+	fw_rule && ipset_r
+} || {
+	fw_rule && iptab_r
+} && ac_rule
 
 exit $?

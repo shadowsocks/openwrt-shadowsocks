@@ -24,6 +24,8 @@ get_args() {
 	config_get tunnel_forward $1 tunnel_forward
 	config_get lan_ac_mode $1 lan_ac_mode
 	config_get lan_ac_ip $1 lan_ac_ip
+	config_get wan_bp_ip $1 wan_bp_ip
+	config_get wan_fw_ip $1 wan_fw_ip
 	: ${local_port:=1080}
 	: ${tunnel_port:=5300}
 	: ${tunnel_forward:=8.8.4.4:53}
@@ -68,6 +70,8 @@ start_rules() {
 		-c "$CONFIG_FILE" \
 		-i "$ignore_list" \
 		-a "$ac_args" \
+		-b "$wan_bp_ip" \
+		-w "$wan_fw_ip" \
 		-o
 	return $?
 }
