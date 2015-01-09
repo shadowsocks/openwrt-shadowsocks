@@ -103,22 +103,16 @@ rules() {
 		cat $config_file >$CONFIG_FILE
 	else
 		check_args s p k m
-		cat <<-EOF |
+		cat <<-EOF >$CONFIG_FILE
 			{
-			    "server": "|SERVER|",
-			    "server_port": |SERVER_PORT|,
-			    "local_port": |LOCAL_PORT|,
-			    "password": "|PASSWORD|",
-			    "timeout": |TIMEOUT|,
-			    "method": "|METHOD|"
+			    "server": "$server",
+			    "server_port": $server_port,
+			    "local_port": $local_port,
+			    "password": "$password",
+			    "timeout": $timeout,
+			    "method": "$encrypt_method"
 			}
 EOF
-		sed -e "s#|SERVER|#$server#" \
-			-e "s#|SERVER_PORT|#$server_port#" \
-			-e "s#|LOCAL_PORT|#$local_port#" \
-			-e "s#|PASSWORD|#$password#" \
-			-e "s#|TIMEOUT|#$timeout#" \
-			-e "s#|METHOD|#$encrypt_method#" >$CONFIG_FILE
 	fi
 	start_rules
 }
