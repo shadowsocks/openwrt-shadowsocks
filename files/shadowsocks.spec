@@ -27,6 +27,7 @@ get_args() {
 	config_get lan_ac_ip $1 lan_ac_ip
 	config_get wan_bp_ip $1 wan_bp_ip
 	config_get wan_fw_ip $1 wan_fw_ip
+	config_get ipt_ext $1 ipt_ext
 	: ${timeout:=60}
 	: ${local_port:=1080}
 	: ${tunnel_port:=5300}
@@ -74,6 +75,7 @@ start_rules() {
 		-a "$ac_args" \
 		-b "$wan_bp_ip" \
 		-w "$wan_fw_ip" \
+		-e "$ipt_ext" \
 		-o
 	return $?
 }
