@@ -25,27 +25,24 @@ loger() {
 	logger -st ss-rules[$$] -p$1 $2
 }
 
+ipt="iptables -t nat"
+
 flush_r() {
 	local IPT=$(iptables-save -t nat)
 
 	if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
 		ROUTING=zone_lan_prerouting
 	fi
-	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
-		sed -e 's/^-A/iptables -t nat -D/' -e 's/$/;/')
-	iptables -t nat -F SS_SPEC_LAN_AC 2>/dev/null && \
-	iptables -t nat -X SS_SPEC_LAN_AC
-	iptables -t nat -F SS_SPEC_WAN_AC 2>/dev/null && \
-	iptables -t nat -X SS_SPEC_WAN_AC
-	iptables -t nat -F SS_SPEC_WAN_FW 2>/dev/null && \
-	iptables -t nat -X SS_SPEC_WAN_FW
 
-	if command -v ipset >/dev/null; then
-		ipset -X ss_spec_wan_ac 2>/dev/null
-		ipset -X ss_spec_wan_fw 2>/dev/null
-		return 0
-	fi
-	return 1
+	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
+		sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+
+	for chain in $(echo "$IPT" | awk '/^:SS_SPEC/{print $1}'); do
+		$ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+	done
+
+	ipset -X ss_spec_wan_ac 2>/dev/null
+	return 0
 }
 
 iptab_r() {
@@ -63,32 +60,30 @@ EOF
 }
 
 ipset_r() {
-	ipset -! -R <<-EOF &&
+	ipset -! -R <<-EOF || return 1
 		create ss_spec_wan_ac hash:net
-		create ss_spec_wan_fw hash:net
 		$(echo -e "$IPLIST" | sed -e "s/^/add ss_spec_wan_ac /")
-		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_fw $ip"; done)
+		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_ac $ip nomatch"; done)
 EOF
-	iptables-restore -n <<-EOF
-		*nat
-		:SS_SPEC_WAN_AC - [0:0]
-		-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_fw dst \
-			-j SS_SPEC_WAN_FW
-		-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_ac dst -j RETURN
-		-A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
-		COMMIT
-EOF
+	$ipt -N SS_SPEC_WAN_AC
+	$ipt -A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_ac dst -j RETURN
+	$ipt -A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
 	return $?
 }
 
 fw_rule() {
-	iptables -t nat -N SS_SPEC_WAN_FW
-	iptables -t nat -A SS_SPEC_WAN_FW -p tcp \
+	$ipt -N SS_SPEC_WAN_FW
+	$ipt -A SS_SPEC_WAN_FW -p tcp \
 		-j REDIRECT --to-ports $LOCAL_PORT 2>/dev/null || {
-	[ -n "$LOCAL_IP" ] && \
-	iptables -t nat -A SS_SPEC_WAN_FW -p tcp \
-		-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
-	} || return 1
+		LOCAL_IP=$(uci get network.lan.ipaddr 2>/dev/null)
+		[ -n "$LOCAL_IP" ] && \
+		$ipt -A SS_SPEC_WAN_FW -p tcp \
+			-j DNAT --to-destination $LOCAL_IP:$LOCAL_PORT
+	} || {
+		loger 3 "Can't redirect, please check the iptables."
+		exit 1
+	}
+	command -v ipset >/dev/null
 	return $?
 }
 
@@ -109,12 +104,12 @@ ac_rule() {
 		COMMIT
 EOF
 	if [ "$OUTPUT" = 1 ]; then
-		iptables -t nat -A OUTPUT -p tcp $EXT_ARGS \
+		$ipt -A OUTPUT -p tcp $EXT_ARGS \
 			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
 	fi
 
 	if [ -n "$ROUTING" ]; then
-		iptables -t nat -A $ROUTING -p tcp $EXT_ARGS \
+		$ipt -A $ROUTING -p tcp $EXT_ARGS \
 			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_LAN_AC
 	fi
 	return $?
@@ -141,7 +136,7 @@ while getopts ":s:l:c:i:e:a:b:w:of" arg; do
 			LAN_AC_IP=$OPTARG
 			;;
 		b)
-			WAN_BP_IP=$OPTARG
+			WAN_BP_IP=$(for ip in $OPTARG; do echo $ip; done)
 			;;
 		w)
 			WAN_FW_IP=$OPTARG
@@ -182,9 +177,6 @@ if [ -z "$SERVER" ]; then
 	exit 1
 fi
 
-LOCAL_IP=$(uci get network.lan.ipaddr 2>/dev/null)
-WAN_BP_IP=$(for ip in $WAN_BP_IP; do echo $ip; done)
-
 if [ -f "$IGNORE" ]; then
 	IGNORE_IP=$(cat $IGNORE 2>/dev/null)
 fi
@@ -212,10 +204,6 @@ IPLIST=$(cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 EOF
 )
 
-flush_r && {
-	fw_rule && ipset_r
-} || {
-	fw_rule && iptab_r
-} && ac_rule
+flush_r && fw_rule && ipset_r || iptab_r && ac_rule
 
 exit $?
