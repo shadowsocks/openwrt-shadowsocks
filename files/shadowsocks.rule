@@ -88,13 +88,23 @@ fw_rule() {
 }
 
 ac_rule() {
-	local S1=RETURN
-	local S2=SS_SPEC_WAN_AC
+	local S1 S2
 
-	if echo $LAN_AC_IP | grep -qi "^w"; then
-		S1=SS_SPEC_WAN_AC
-		S2=RETURN
+	if [ -z "$LAN_AC_IP" -o "${LAN_AC_IP:0:1}" = "b" ]; then
+		S1=RETURN
+		S2=SS_SPEC_WAN_AC
+	else
+		if [ "${LAN_AC_IP:0:1}" = "w" ]; then
+			S1=SS_SPEC_WAN_AC
+			S2=RETURN
+		fi
 	fi
+
+	if [ -z "$S2" ]; then
+		loger 3 "Bad argument \`-a $LAN_AC_IP\`."
+		return 2
+	fi
+
 	iptables-restore -n <<-EOF || return 1
 		*nat
 		:SS_SPEC_LAN_AC - [0:0]
@@ -170,7 +180,7 @@ if [ -z "$SERVER" -o -z "$LOCAL_PORT" ]; then
 	exit 2
 fi
 
-SERVER=$(resolveip -t30 $SERVER)
+SERVER=$(resolveip -t30 -4 $SERVER)
 
 if [ -z "$SERVER" ]; then
 	loger 3 "Can't resolve the server hostname."
