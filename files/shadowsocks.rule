@@ -180,7 +180,7 @@ if [ -z "$SERVER" -o -z "$LOCAL_PORT" ]; then
 	exit 2
 fi
 
-SERVER=$(resolveip -t30 -4 $SERVER)
+SERVER=$(resolveip -t60 $SERVER)
 
 if [ -z "$SERVER" ]; then
 	loger 3 "Can't resolve the server hostname."
