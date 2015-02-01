@@ -15,6 +15,7 @@ get_config() {
 	config_get config_file $1 config_file
 	config_get server $1 server
 	config_get server_port $1 server_port
+	config_get local $1 local
 	config_get local_port $1 local_port
 	config_get password $1 password
 	config_get timeout $1 timeout
@@ -29,6 +30,7 @@ get_config() {
 	config_get wan_fw_ip $1 wan_fw_ip
 	config_get ipt_ext $1 ipt_ext
 	: ${timeout:=60}
+	: ${local:=0.0.0.0}
 	: ${local_port:=1080}
 	: ${tunnel_port:=5300}
 	: ${tunnel_forward:=8.8.4.4:53}
@@ -59,13 +61,15 @@ start_rules() {
 
 start_redir() {
 	service_start /usr/bin/ss-redir \
-		-c "$CONFIG_FILE"
+		-c "$CONFIG_FILE" \
+		-b "$local"
 	return $?
 }
 
 start_tunnel() {
 	service_start /usr/bin/ss-tunnel \
 		-c "$CONFIG_FILE" \
+		-b "$local" \
 		-l "$tunnel_port" \
 		-L "$tunnel_forward" \
 		-u
