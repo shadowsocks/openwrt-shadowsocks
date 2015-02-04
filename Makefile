@@ -32,7 +32,7 @@ define Package/shadowsocks-libev/Default
 	SECTION:=net
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy $(2)
-	URL:=https://github.com/madeye/shadowsocks-libev
+	URL:=https://github.com/shadowsocks/shadowsocks-libev
 	VARIANT:=$(1)
 	DEPENDS:=$(3)
 endef
