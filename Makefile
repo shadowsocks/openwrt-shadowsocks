@@ -75,7 +75,6 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 		commit firewall
 EOF
 fi
-rm -f /etc/hotplug.d/iface/30-shadowsocks
 exit 0
 endef
 
