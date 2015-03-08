@@ -162,14 +162,14 @@ while getopts ":s:l:c:i:e:a:b:w:of" arg; do
 done
 
 if [ -f "$CONFIG" ]; then
-	eval $(awk -F'[,:]' '{
+	eval $(sed 's/:/#/' < $CONFIG | awk -F'[,#]' '{
 		for (i=1; i<=NF; i++) {
 			if ($i ~ /"server"/)
 				{printf("server=%s;", $(i+1))}
 			if ($i ~ /"local_port"/)
 				{printf("local_port=%s;", $(i+1))}
 		}
-	}' $CONFIG | tr -d '" ')
+	}' | tr -d '" ')
 fi
 
 : ${SERVER:=$server}
