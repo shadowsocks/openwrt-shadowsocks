@@ -30,10 +30,6 @@ ipt="iptables -t nat"
 flush_r() {
 	local IPT=$(iptables-save -t nat)
 
-	if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
-		ROUTING=zone_lan_prerouting
-	fi
-
 	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
 		sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
 
@@ -113,14 +109,12 @@ ac_rule() {
 		-A SS_SPEC_LAN_AC -j $S2
 		COMMIT
 EOF
+	$ipt -A zone_lan_prerouting -p tcp $EXT_ARGS \
+		-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_LAN_AC
+
 	if [ "$OUTPUT" = 1 ]; then
 		$ipt -A OUTPUT -p tcp $EXT_ARGS \
 			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
-	fi
-
-	if [ -n "$ROUTING" ]; then
-		$ipt -A $ROUTING -p tcp $EXT_ARGS \
-			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_LAN_AC
 	fi
 	return $?
 }
@@ -162,14 +156,10 @@ while getopts ":s:l:c:i:e:a:b:w:of" arg; do
 done
 
 if [ -f "$CONFIG" ]; then
-	eval $(sed 's/:/#/' < $CONFIG | awk -F'[,#]' '{
-		for (i=1; i<=NF; i++) {
-			if ($i ~ /"server"/)
-				{printf("server=%s;", $(i+1))}
-			if ($i ~ /"local_port"/)
-				{printf("local_port=%s;", $(i+1))}
-		}
-	}' | tr -d '" ')
+	eval $(jshn -r "$(cat $CONFIG)" | awk '{
+		if($2~/server\047/){printf("server=%s\n",$3)}
+		if($2~/local_port\047/){printf("local_port=%s\n",$3)}
+	}')
 fi
 
 : ${SERVER:=$server}
