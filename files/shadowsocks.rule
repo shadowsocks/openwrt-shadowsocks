@@ -84,7 +84,7 @@ fw_rule() {
 }
 
 ac_rule() {
-	local S1 S2
+	local S1 S2 ROUTECHAIN
 
 	if [ -z "$LAN_AC_IP" -o "${LAN_AC_IP:0:1}" = "b" ]; then
 		S1=RETURN
@@ -101,6 +101,11 @@ ac_rule() {
 		return 2
 	fi
 
+	ROUTECHAIN=PREROUTING
+	if iptables-save -t nat | grep -q "^:zone_lan_prerouting"; then
+		ROUTECHAIN=zone_lan_prerouting
+	fi
+
 	iptables-restore -n <<-EOF || return 1
 		*nat
 		:SS_SPEC_LAN_AC - [0:0]
@@ -109,7 +114,7 @@ ac_rule() {
 		-A SS_SPEC_LAN_AC -j $S2
 		COMMIT
 EOF
-	$ipt -A zone_lan_prerouting -p tcp $EXT_ARGS \
+	$ipt -A $ROUTECHAIN -p tcp $EXT_ARGS \
 		-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_LAN_AC
 
 	if [ "$OUTPUT" = 1 ]; then
