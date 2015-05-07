@@ -21,6 +21,7 @@ get_config() {
 	config_get timeout $1 timeout
 	config_get encrypt_method $1 encrypt_method
 	config_get ignore_list $1 ignore_list
+	config_get udp_relay $1 udp_relay
 	config_get_bool tunnel_enable $1 tunnel_enable
 	config_get tunnel_port $1 tunnel_port
 	config_get tunnel_forward $1 tunnel_forward
@@ -30,6 +31,7 @@ get_config() {
 	config_get wan_fw_ip $1 wan_fw_ip
 	config_get ipt_ext $1 ipt_ext
 	: ${timeout:=60}
+	: ${udp_relay:=1}
 	: ${local:=0.0.0.0}
 	: ${local_port:=1080}
 	: ${tunnel_port:=5300}
@@ -55,14 +57,14 @@ start_rules() {
 		-b "$wan_bp_ip" \
 		-w "$wan_fw_ip" \
 		-e "$ipt_ext" \
-		-o
+		-o $udp
 	return $?
 }
 
 start_redir() {
 	service_start /usr/bin/ss-redir \
 		-c "$CONFIG_FILE" \
-		-b "$local"
+		-b "$local" $udp
 	return $?
 }
 
@@ -80,6 +82,7 @@ rules() {
 	config_load shadowsocks
 	config_foreach get_config shadowsocks
 	[ "$enable" = 1 ] || exit 0
+	[ "$udp_relay" = 1 ] && udp="-u"
 	mkdir -p $(dirname $CONFIG_FILE)
 
 	if [ "$use_conf_file" = 1 ]; then

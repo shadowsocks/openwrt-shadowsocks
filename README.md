@@ -5,7 +5,7 @@ Shadowsocks-libev for OpenWrt
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: 2.1.4-1  
+ 当前版本: 2.2.0-1  
  [预编译 IPK 下载][2]  
 
 特性
@@ -24,7 +24,7 @@ Shadowsocks-libev for OpenWrt
    > 针对 OpenWrt 的优化版本  
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
-   > `ss-redir` 提供透明代理  
+   > `ss-redir` 提供透明代理, 从 v2.2.0 开始支持 UDP  
    > `ss-rules` 生成代理转发规则  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
 
