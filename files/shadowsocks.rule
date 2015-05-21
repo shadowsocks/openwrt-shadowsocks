@@ -102,7 +102,7 @@ ac_rule() {
 	fi
 
 	ipset -! -R <<-EOF || return 1
-		create ss_spec_lan_ac hash:ip
+		create ss_spec_lan_ac hash:net
 		$(for ip in ${LAN_AC_IP:1}; do echo "add ss_spec_lan_ac $ip $TAG"; done)
 EOF
 	$ipt_n -A $ROUTECHAIN -p tcp $EXT_ARGS \
