@@ -5,7 +5,7 @@ Shadowsocks-libev for OpenWrt
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: 2.2.2-1  
+ 当前版本: 2.2.3-1  
  [预编译 IPK 下载][2]  
 
 特性
@@ -50,13 +50,13 @@ Shadowsocks-libev for OpenWrt
 
  - shadowsocks-libev 配置文件: `/etc/shadowsocks.json`
 
- - shadowsocks-libev-spec 配置文件: `/etc/shadowsocks/config.json`
+ - shadowsocks-libev-spec 配置文件: `/etc/config/shadowsocks`
 
  - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
 
- - [IP 忽略列表][3]: `/etc/shadowsocks/ignore.list` 可以使用下面命令更新
+ - [IP 忽略列表][3]可以使用下面命令更新
    ```bash
-   wget -O- 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/shadowsocks/ignore.list
+   wget -O- 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/ignore.list
    ```
 
 ----------
