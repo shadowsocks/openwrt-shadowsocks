@@ -54,16 +54,10 @@ Shadowsocks-libev for OpenWrt
 
  - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
 
- - [IP 忽略列表][3]可以使用下面命令更新
-   ```bash
-   wget -O- 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > /etc/ignore.list
-   ```
-
 ----------
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
   [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/
-  [3]: https://github.com/shadowsocks/openwrt-shadowsocks/blob/master/files/shadowsocks.list
   [L]: https://github.com/aa65535/openwrt-dist-luci
   [S]: http://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
