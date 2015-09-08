@@ -110,7 +110,6 @@ start_tunnel() {
 rules() {
 	config_load shadowsocks
 	config_foreach get_config shadowsocks
-	[ "$enable" = 1 ] || exit 0
 	mkdir -p /var/run /var/etc
 
 	: ${server:?}
@@ -131,7 +130,7 @@ rules() {
 		;;
 	esac
 
-	start_rules
+	[ "$enable" = 1 ] && start_rules
 }
 
 boot() {
