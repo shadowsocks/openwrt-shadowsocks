@@ -1,9 +1,5 @@
 #!/bin/sh
 
-ipt_n="iptables -t nat"
-ipt_m="iptables -t mangle"
-PID_FILE=/var/run/ss-rules.pid
-
 usage() {
 	cat <<-EOF
 		Usage: ss-rules [options]
@@ -27,53 +23,15 @@ EOF
 }
 
 loger() {
-	local pid=$$
-
-	if [ -f $PID_FILE ]; then
-		pid=$(cat $PID_FILE)
-	fi
-
-	# $1: 1.alert 2.crit 3.err 4.warn 5.notice 6.info 7.debug
-	logger -st ss-rules[$pid] -p$1 $2
+	# 1.alert 2.crit 3.err 4.warn 5.notice 6.info 7.debug
+	logger -st ss-rules[$$] -p$1 $2
 }
 
-stop_daemon() {
-	if [ -f $PID_FILE ]; then
-		kill -9 $(cat $PID_FILE)
-		rm -f $PID_FILE
-	fi
-}
-
-start_daemon() {
-	stop_daemon
-
-	(while [ 1 ]; do
-		sleep 15
-
-		local IPT=$(iptables-save -t nat)
-
-		if echo "$IPT" | grep "_SS_SPEC_RULE_" | \
-		grep -q "zone_lan_prerouting"; then
-			continue
-		fi
-
-		if echo "$IPT" | grep -q "^:zone_lan_prerouting"; then
-			$ipt_n -A zone_lan_prerouting -p tcp $EXT_ARGS \
-				-m set ! --match-set ss_spec_lan_ac src \
-				-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
-			loger 4 "zone_lan_prerouting has been restored."
-		else
-			loger 3 "zone_lan_prerouting has been lost."
-		fi
-	done) >/dev/null 2>&1 &
-
-	echo $! >$PID_FILE
-}
+ipt_n="iptables -t nat"
+ipt_m="iptables -t mangle"
 
 flush_r() {
 	local IPT
-
-	stop_daemon
 
 	IPT=$(iptables-save -t nat)
 	eval $(echo "$IPT" | grep "_SS_SPEC_RULE_" | \
@@ -146,10 +104,6 @@ EOF
 	$ipt_n -A $ROUTECHAIN -p tcp $EXT_ARGS \
 		-m set ! --match-set ss_spec_lan_ac src \
 		-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
-
-	if [ "$ROUTECHAIN" = "zone_lan_prerouting" ]; then
-		start_daemon
-	fi
 
 	if [ "$OUTPUT" = 1 ]; then
 		$ipt_n -A OUTPUT -p tcp $EXT_ARGS \

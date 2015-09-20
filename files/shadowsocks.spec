@@ -111,7 +111,7 @@ rules() {
 	config_load shadowsocks
 	config_foreach get_config shadowsocks
 	[ "$enable" = 1 ] || exit 0
-	mkdir -p /var/run /var/etc /var/log
+	mkdir -p /var/run /var/etc
 
 	: ${server:?}
 	: ${server_port:?}
