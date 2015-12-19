@@ -6,8 +6,10 @@ usage() {
 
 		Valid options are:
 
-		    -s <server_host>        hostname or ip of shadowsocks remote server
+		    -s <server_ip>          ip address of shadowsocks remote server
 		    -l <local_port>         port number of shadowsocks local server
+		    -S <server_ip>          ip address of shadowsocks remote server for UDP
+		    -L <local_port>         port number of shadowsocks local server for UDP
 		    -i <ip_list_file>       a file content is bypassed ip list
 		    -a <lan_ips>            lan ip of access control, need a prefix to
 		                            define access control mode
@@ -19,6 +21,7 @@ usage() {
 		    -U                      enable udprelay mode, using different IP
 		                            and ports for TCP and UDP
 		    -f                      flush the rules
+		    -h                      show this help message and exit
 EOF
 }
 
@@ -125,7 +128,7 @@ tp_rule() {
 	return $?
 }
 
-while getopts ":s:l:S:L:i:e:a:b:w:ouUf" arg; do
+while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
 	case $arg in
 		s)
 			server=$OPTARG
@@ -165,6 +168,10 @@ while getopts ":s:l:S:L:i:e:a:b:w:ouUf" arg; do
 			;;
 		f)
 			flush_r
+			exit 0
+			;;
+		h)
+			usage
 			exit 0
 			;;
 	esac
