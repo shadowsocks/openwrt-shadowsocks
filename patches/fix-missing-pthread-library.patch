@@ -1,0 +1,29 @@
+diff --git a/configure.ac b/configure.ac
+index 69ef709..20db04f 100755
+--- a/configure.ac
++++ b/configure.ac
+@@ -149,7 +149,7 @@ AC_ARG_ENABLE(ssp,
+   enable_ssp="no"
+ ],
+ [
+-  enable_ssp="yes"
++  enable_ssp="no"
+ ])
+ 
+ if test x$has_stack_protector = xyes && test x$enable_ssp = xyes; then
+@@ -269,11 +269,11 @@ AC_CHECK_FUNCS([malloc memset socket])
+ 
+ ACX_PTHREAD
+ 
+-if test "$acx_pthread_ok" != "yes"; then
+-    AC_MSG_ERROR([Missing Pthread Library])
+-else
++#if test "$acx_pthread_ok" != "yes"; then
++#    AC_MSG_ERROR([Missing Pthread Library])
++#else
+     LIBS="$LIBS $PTHREAD_LIBS"
+-fi
++#fi
+ 
+ AM_COND_IF([USE_SYSTEM_SHARED_LIB],
+   [],
