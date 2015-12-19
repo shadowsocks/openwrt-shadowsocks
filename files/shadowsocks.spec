@@ -8,6 +8,7 @@ CONFIG_FILE=/var/etc/shadowsocks.json
 
 get_config() {
 	config_get_bool enable $1 enable
+	config_get_bool auth_enable $1 auth_enable
 	config_get server $1 server
 	config_get server_port $1 server_port
 	config_get local_port $1 local_port
@@ -76,7 +77,8 @@ EOF
 	if [ "$udp_mode" = 2 ]; then
 		/usr/bin/ss-redir \
 			-c $CONFIG_FILE \
-			-f /var/run/ss-redir_t.pid
+			-f /var/run/ss-redir_t.pid \
+			$auth
 		cat <<-EOF >$CONFIG_FILE
 			{
 			    "server": "$udp_server",
@@ -92,7 +94,7 @@ EOF
 	/usr/bin/ss-redir \
 		-c $CONFIG_FILE \
 		-f /var/run/ss-redir.pid \
-		$udp
+		$udp $auth
 	return $?
 }
 
@@ -103,7 +105,7 @@ start_tunnel() {
 		-l $tunnel_port \
 		-L $tunnel_forward \
 		-f /var/run/ss-tunnel.pid \
-		$udp
+		$udp $auth
 	return $?
 }
 
@@ -130,6 +132,7 @@ rules() {
 			: ${udp_encrypt_method:?}
 		;;
 	esac
+  [ "$auth_enable" = 1 ] && auth="-A"
 
 	start_rules
 }
