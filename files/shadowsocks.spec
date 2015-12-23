@@ -1,51 +1,45 @@
 #!/bin/sh /etc/rc.common
+#
+# Copyright (C) 2015 OpenWrt-dist
+# Copyright (C) 2015 Jian Chang <aa65535@live.com>
+#
+# This is free software, licensed under the GNU General Public License v3.
+# See /LICENSE for more information.
+#
 
 START=90
 STOP=15
 
-EXTRA_COMMANDS="rules"
-CONFIG_FILE=/var/etc/shadowsocks.json
+NAME=shadowsocks
+EXTRA_COMMANDS=rules
+CONFIG_FILE=/var/etc/$NAME.json
 
-get_config() {
-	config_get_bool enable $1 enable
-	config_get_bool auth_enable $1 auth_enable
-	config_get server $1 server
-	config_get server_port $1 server_port
-	config_get local_port $1 local_port
-	config_get timeout $1 timeout
-	config_get password $1 password
-	config_get encrypt_method $1 encrypt_method
-	config_get ignore_list $1 ignore_list
-	config_get udp_mode $1 udp_mode
-	config_get udp_server $1 udp_server
-	config_get udp_server_port $1 udp_server_port
-	config_get udp_local_port $1 udp_local_port
-	config_get udp_timeout $1 udp_timeout
-	config_get udp_password $1 udp_password
-	config_get udp_encrypt_method $1 udp_encrypt_method
-	config_get_bool tunnel_enable $1 tunnel_enable
-	config_get tunnel_port $1 tunnel_port
-	config_get tunnel_forward $1 tunnel_forward
-	config_get lan_ac_mode $1 lan_ac_mode
-	config_get lan_ac_ip $1 lan_ac_ip
-	config_get wan_bp_ip $1 wan_bp_ip
-	config_get wan_fw_ip $1 wan_fw_ip
-	config_get ipt_ext $1 ipt_ext
-	: ${timeout:=60}
-	: ${udp_timeout:=60}
-	: ${tunnel_port:=5300}
-	: ${tunnel_forward:=8.8.4.4:53}
+uci_get_by_name() {
+	local ret=$(uci get $NAME.$1.$2 2>/dev/null)
+	echo ${ret:=$3}
+}
+
+uci_get_by_type() {
+	local ret=$(uci get $NAME.@$1[0].$2 2>/dev/null)
+	echo ${ret:=$3}
 }
 
 start_rules() {
-	local ac_args
-
-	if [ -n "$lan_ac_ip" ]; then
-		case $lan_ac_mode in
-			1) ac_args="w$lan_ac_ip"
-			;;
-			2) ac_args="b$lan_ac_ip"
-			;;
+	local ac_ips
+	local lan_ac_mode=$(uci_get_by_type access_control lan_ac_mode)
+	local lan_ac_ips=$(uci_get_by_type access_control lan_ac_ips)
+	server=$(uci_get_by_name $GLOBAL_SERVER server)
+	local_port=$(uci_get_by_name $GLOBAL_SERVER local_port)
+	if [ "$GLOBAL_SERVER" = "$UDP_RELAY_SERVER" ]; then
+		ARG_UDP="-u"
+	elif [ -n "$UDP_RELAY_SERVER" ]; then
+		ARG_UDP="-U"
+		udp_server=$(uci_get_by_name $UDP_RELAY_SERVER server)
+		udp_local_port=$(uci_get_by_name $UDP_RELAY_SERVER local_port)
+	fi
+	if [ -n "$lan_ac_ips" ]; then
+		case "$lan_ac_mode" in
+			w|b) ac_ips="$lan_ac_mode$lan_ac_ips";;
 		esac
 	fi
 	/usr/bin/ss-rules \
@@ -53,88 +47,63 @@ start_rules() {
 		-l "$local_port" \
 		-S "$udp_server" \
 		-L "$udp_local_port" \
-		-i "$ignore_list" \
-		-a "$ac_args" \
-		-b "$wan_bp_ip" \
-		-w "$wan_fw_ip" \
-		-e "$ipt_ext" \
-		-o $udp
+		-a "$ac_ips" \
+		-i "$(uci_get_by_type access_control wan_bp_list)" \
+		-b "$(uci_get_by_type access_control wan_bp_ips)" \
+		-w "$(uci_get_by_type access_control wan_fw_ips)" \
+		-e "$(uci_get_by_type access_control ipt_ext)" \
+		-o $ARG_UDP
 	return $?
 }
 
 start_redir() {
+	case "$(uci_get_by_name $GLOBAL_SERVER auth_enable)" in
+		1|on|true|yes|enabled) ARG_OTA="-A";;
+	esac
 	cat <<-EOF >$CONFIG_FILE
 		{
 		    "server": "$server",
-		    "server_port": $server_port,
+		    "server_port": $(uci_get_by_name $GLOBAL_SERVER server_port),
 		    "local_address": "0.0.0.0",
 		    "local_port": $local_port,
-		    "password": "$password",
-		    "timeout": $timeout,
-		    "method": "$encrypt_method"
+		    "password": "$(uci_get_by_name $GLOBAL_SERVER password)",
+		    "timeout": $(uci_get_by_name $GLOBAL_SERVER timeout 60),
+		    "method": "$(uci_get_by_name $GLOBAL_SERVER encrypt_method)"
 		}
 EOF
-	if [ "$udp_mode" = 2 ]; then
+	if [ "$ARG_UDP" = "-U" ]; then
 		/usr/bin/ss-redir \
-			-c $CONFIG_FILE \
-			-f /var/run/ss-redir_t.pid \
-			$auth
+			-c $CONFIG_FILE $ARG_OTA \
+			-f /var/run/ss-redir-tcp.pid
+		case "$(uci_get_by_name $UDP_RELAY_SERVER auth_enable)" in
+			1|on|true|yes|enabled) ARG_OTA="-A";;
+			*) ARG_OTA="";;
+		esac
 		cat <<-EOF >$CONFIG_FILE
 			{
 			    "server": "$udp_server",
-			    "server_port": $udp_server_port,
+			    "server_port": $(uci_get_by_name $UDP_RELAY_SERVER server_port),
 			    "local_address": "0.0.0.0",
 			    "local_port": $udp_local_port,
-			    "password": "$udp_password",
-			    "timeout": $udp_timeout,
-			    "method": "$udp_encrypt_method"
+			    "password": "$(uci_get_by_name $UDP_RELAY_SERVER password)",
+			    "timeout": $(uci_get_by_name $UDP_RELAY_SERVER timeout 60),
+			    "method": "$(uci_get_by_name $UDP_RELAY_SERVER encrypt_method)"
 			}
 EOF
 	fi
 	/usr/bin/ss-redir \
-		-c $CONFIG_FILE \
-		-f /var/run/ss-redir.pid \
-		$udp $auth
+		-c $CONFIG_FILE $ARG_OTA $ARG_UDP \
+		-f /var/run/ss-redir.pid
 	return $?
 }
 
 start_tunnel() {
-	: ${udp:="-u"}
 	/usr/bin/ss-tunnel \
-		-c $CONFIG_FILE \
-		-l $tunnel_port \
-		-L $tunnel_forward \
-		-f /var/run/ss-tunnel.pid \
-		$udp $auth
+		-c $CONFIG_FILE $ARG_OTA ${ARG_UDP:="-u"} \
+		-l $(uci_get_by_type udp_forward tunnel_port 5300) \
+		-L $(uci_get_by_type udp_forward tunnel_forward 8.8.4.4:53) \
+		-f /var/run/ss-tunnel.pid
 	return $?
-}
-
-rules() {
-	config_load shadowsocks
-	config_foreach get_config shadowsocks
-	[ "$enable" = 1 ] || exit 0
-	mkdir -p /var/run /var/etc
-
-	: ${server:?}
-	: ${server_port:?}
-	: ${local_port:?}
-	: ${password:?}
-	: ${encrypt_method:?}
-	case $udp_mode in
-		1) udp="-u"
-		;;
-		2)
-			udp="-U"
-			: ${udp_server:?}
-			: ${udp_server_port:?}
-			: ${udp_local_port:?}
-			: ${udp_password:?}
-			: ${udp_encrypt_method:?}
-		;;
-	esac
-  [ "$auth_enable" = 1 ] && auth="-A"
-
-	start_rules
 }
 
 boot() {
@@ -144,9 +113,20 @@ boot() {
 	start
 }
 
+rules() {
+	GLOBAL_SERVER=$(uci_get_by_type global global_server)
+	[ "$GLOBAL_SERVER" = "nil" ] && exit 0
+	mkdir -p /var/run /var/etc
+	UDP_RELAY_SERVER=$(uci_get_by_type global udp_relay_server)
+	[ "$UDP_RELAY_SERVER" = "same" ] && UDP_RELAY_SERVER=$GLOBAL_SERVER
+	start_rules
+}
+
 start() {
 	rules && start_redir
-	[ "$tunnel_enable" = 1 ] && start_tunnel
+	case "$(uci_get_by_type udp_forward tunnel_enable)" in
+		1|on|true|yes|enabled) start_tunnel;;
+	esac
 }
 
 stop() {
