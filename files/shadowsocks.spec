@@ -24,22 +24,35 @@ uci_get_by_type() {
 	echo ${ret:=$3}
 }
 
+gen_config_file() {
+	cat <<-EOF >$CONFIG_FILE
+		{
+		    "server": "$(uci_get_by_name $1 server)",
+		    "server_port": $(uci_get_by_name $1 server_port),
+		    "local_address": "0.0.0.0",
+		    "local_port": $(uci_get_by_name $1 local_port),
+		    "password": "$(uci_get_by_name $1 password)",
+		    "timeout": $(uci_get_by_name $1 timeout 60),
+		    "method": "$(uci_get_by_name $1 encrypt_method)"
+		}
+EOF
+}
+
 start_rules() {
-	local ac_ips
-	local lan_ac_mode=$(uci_get_by_type access_control lan_ac_mode)
+	local server=$(uci_get_by_name $GLOBAL_SERVER server)
+	local local_port=$(uci_get_by_name $GLOBAL_SERVER local_port)
 	local lan_ac_ips=$(uci_get_by_type access_control lan_ac_ips)
-	server=$(uci_get_by_name $GLOBAL_SERVER server)
-	local_port=$(uci_get_by_name $GLOBAL_SERVER local_port)
+	local lan_ac_mode=$(uci_get_by_type access_control lan_ac_mode)
 	if [ "$GLOBAL_SERVER" = "$UDP_RELAY_SERVER" ]; then
 		ARG_UDP="-u"
 	elif [ -n "$UDP_RELAY_SERVER" ]; then
 		ARG_UDP="-U"
-		udp_server=$(uci_get_by_name $UDP_RELAY_SERVER server)
-		udp_local_port=$(uci_get_by_name $UDP_RELAY_SERVER local_port)
+		local udp_server=$(uci_get_by_name $UDP_RELAY_SERVER server)
+		local udp_local_port=$(uci_get_by_name $UDP_RELAY_SERVER local_port)
 	fi
 	if [ -n "$lan_ac_ips" ]; then
 		case "$lan_ac_mode" in
-			w|b) ac_ips="$lan_ac_mode$lan_ac_ips";;
+			w|W|b|B) local ac_ips="$lan_ac_mode$lan_ac_ips";;
 		esac
 	fi
 	/usr/bin/ss-rules \
@@ -59,18 +72,9 @@ start_rules() {
 start_redir() {
 	case "$(uci_get_by_name $GLOBAL_SERVER auth_enable)" in
 		1|on|true|yes|enabled) ARG_OTA="-A";;
+		*) ARG_OTA="";;
 	esac
-	cat <<-EOF >$CONFIG_FILE
-		{
-		    "server": "$server",
-		    "server_port": $(uci_get_by_name $GLOBAL_SERVER server_port),
-		    "local_address": "0.0.0.0",
-		    "local_port": $local_port,
-		    "password": "$(uci_get_by_name $GLOBAL_SERVER password)",
-		    "timeout": $(uci_get_by_name $GLOBAL_SERVER timeout 60),
-		    "method": "$(uci_get_by_name $GLOBAL_SERVER encrypt_method)"
-		}
-EOF
+	gen_config_file $GLOBAL_SERVER
 	if [ "$ARG_UDP" = "-U" ]; then
 		/usr/bin/ss-redir \
 			-c $CONFIG_FILE $ARG_OTA \
@@ -79,17 +83,7 @@ EOF
 			1|on|true|yes|enabled) ARG_OTA="-A";;
 			*) ARG_OTA="";;
 		esac
-		cat <<-EOF >$CONFIG_FILE
-			{
-			    "server": "$udp_server",
-			    "server_port": $(uci_get_by_name $UDP_RELAY_SERVER server_port),
-			    "local_address": "0.0.0.0",
-			    "local_port": $udp_local_port,
-			    "password": "$(uci_get_by_name $UDP_RELAY_SERVER password)",
-			    "timeout": $(uci_get_by_name $UDP_RELAY_SERVER timeout 60),
-			    "method": "$(uci_get_by_name $UDP_RELAY_SERVER encrypt_method)"
-			}
-EOF
+		gen_config_file $UDP_RELAY_SERVER
 	fi
 	/usr/bin/ss-redir \
 		-c $CONFIG_FILE $ARG_OTA $ARG_UDP \
@@ -104,13 +98,6 @@ start_tunnel() {
 		-L $(uci_get_by_type udp_forward tunnel_forward 8.8.4.4:53) \
 		-f /var/run/ss-tunnel.pid
 	return $?
-}
-
-boot() {
-	until iptables-save -t nat | grep -q "^:zone_lan_prerouting"; do
-		sleep 1
-	done
-	start
 }
 
 rules() {
