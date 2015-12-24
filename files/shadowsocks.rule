@@ -106,17 +106,15 @@ ac_rule() {
 	fi
 
 	IFNAME=$(uci get -P/var/state network.lan.ifname 2>/dev/null)
-	[ -n "$IFNAME" ] && IFNAME="-i $IFNAME"
-
 	ipset -! -R <<-EOF || return 1
 		create ss_spec_lan_ac hash:net
 		$(for ip in ${LAN_AC_IP:1}; do echo "add ss_spec_lan_ac $ip"; done)
 EOF
-	$ipt_n -I PREROUTING 1 $IFNAME -p tcp $EXT_ARGS $MATCH_SET \
+	$ipt_n -I PREROUTING 1 ${IFNAME:+-i $IFNAME} -p tcp $EXT_ARGS $MATCH_SET \
 		-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
 
 	if [ "$OUTPUT" = 1 ]; then
-		$ipt_n -A OUTPUT -p tcp $EXT_ARGS \
+		$ipt_n -I OUTPUT 1 ${IFNAME:+-o $IFNAME} -p tcp $EXT_ARGS \
 			-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_WAN_AC
 	fi
 	return $?
@@ -129,7 +127,7 @@ tp_rule() {
 	$ipt_m -N SS_SPEC_TPROXY
 	$ipt_m -A SS_SPEC_TPROXY -p udp -m set ! --match-set ss_spec_wan_ac dst \
 		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
-	$ipt_m -I PREROUTING 1 $IFNAME -p udp $EXT_ARGS $MATCH_SET \
+	$ipt_m -I PREROUTING 1 ${IFNAME:+-i $IFNAME} -p udp $EXT_ARGS $MATCH_SET \
 		-m comment --comment "_SS_SPEC_RULE_" -j SS_SPEC_TPROXY
 	return $?
 }
@@ -155,7 +153,7 @@ gen_iplist() {
 		240.0.0.0/4
 		255.255.255.255
 		$WAN_BP_IP
-		$(cat "$IGNORE" 2>/dev/null)
+		$(cat ${IGNORE_LIST:=/dev/null} 2>/dev/null)
 EOF
 }
 
@@ -174,7 +172,7 @@ while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
 			LOCAL_PORT=$OPTARG
 			;;
 		i)
-			IGNORE=$OPTARG
+			IGNORE_LIST=$OPTARG
 			;;
 		e)
 			EXT_ARGS=$OPTARG
@@ -214,13 +212,9 @@ fi
 if [ "$TPROXY" = 1 ]; then
 	SERVER=$server
 	LOCAL_PORT=$local_port
-fi
-
-if [ "$TPROXY" = 2 ]; then
-	if [ -z "$SERVER" -o -z "$LOCAL_PORT" ]; then
-		loger 3 "You must assign ip and port to the UDP Relay Server."
-		exit 2
-	fi
+elif [ "$TPROXY" = 2 ]; then
+	: ${SERVER:?"You must assign ip for the udp relay server."}
+	: ${LOCAL_PORT:?"You must assign port for the udp relay server."}
 fi
 
 flush_r && fw_rule && ipset_r && ac_rule && tp_rule
