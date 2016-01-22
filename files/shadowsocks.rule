@@ -104,7 +104,7 @@ EOF
 	$IPT -I PREROUTING 1 ${IFNAME:+-i $IFNAME} -p tcp $EXT_ARGS $MATCH_SET \
 		-m comment --comment "$TAG" -j SS_SPEC_WAN_AC
 	if [ "$OUTPUT" = 1 ]; then
-		$IPT -I OUTPUT 1 ${IFNAME:+-o $IFNAME} -p tcp $EXT_ARGS \
+		$IPT -I OUTPUT 1 -p tcp $EXT_ARGS \
 			-m comment --comment "$TAG" -j SS_SPEC_WAN_AC
 	fi
 	return $?
