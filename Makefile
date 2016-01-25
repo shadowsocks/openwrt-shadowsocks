@@ -69,7 +69,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 		delete firewall.shadowsocks
 		set firewall.shadowsocks=include
 		set firewall.shadowsocks.type=script
-		set firewall.shadowsocks.path=/usr/share/shadowsocks/firewall.include
+		set firewall.shadowsocks.path=/var/etc/shadowsocks.include
 		set firewall.shadowsocks.reload=1
 		commit firewall
 EOF
@@ -99,8 +99,6 @@ define Package/shadowsocks-libev-spec/install
 	$(INSTALL_DATA) ./files/shadowsocks.config $(1)/etc/config/shadowsocks
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/shadowsocks.spec $(1)/etc/init.d/shadowsocks
-	$(INSTALL_DIR) $(1)/usr/share/shadowsocks
-	$(INSTALL_DATA) ./files/shadowsocks.include $(1)/usr/share/shadowsocks/firewall.include
 endef
 
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)

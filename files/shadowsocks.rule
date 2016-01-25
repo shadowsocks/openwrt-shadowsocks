@@ -9,6 +9,7 @@
 
 TAG="_SS_SPEC_RULE_"   # comment tag
 IPT="iptables -t nat"  # alias of iptables
+FWI=$(uci get firewall.shadowsocks.path 2>/dev/null)  # firewall include file
 
 usage() {
 	cat <<-EOF
@@ -56,6 +57,7 @@ flush_r() {
 	ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
 	ipset -X ss_spec_lan_ac 2>/dev/null
 	ipset -X ss_spec_wan_ac 2>/dev/null
+	echo '#!/bin/sh' >$FWI
 	return 0
 }
 
@@ -154,6 +156,22 @@ gen_iplist() {
 EOF
 }
 
+gen_include() {
+	extract_rules() {
+		echo "*$1"
+		iptables-save -t $1 | grep SS_SPEC_ |\
+			sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/"
+		echo 'COMMIT'
+	}
+	cat <<-EOF >>$FWI
+	iptables-restore -n <<-EOT
+	$(extract_rules nat)
+	$(extract_rules mangle)
+	EOT
+EOF
+	return 0
+}
+
 while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
 	case "$arg" in
 		s)
@@ -214,6 +232,6 @@ elif [ "$TPROXY" = 2 ]; then
 	: ${LOCAL_PORT:?"You must assign a port for the udp relay server."}
 fi
 
-flush_r && fw_rule && ipset_r && ac_rule && tp_rule
+flush_r && fw_rule && ipset_r && ac_rule && tp_rule && gen_include
 [ "$?" = 0 ] || loger 3 "Start failed!"
 exit $?
