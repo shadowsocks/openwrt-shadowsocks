@@ -57,7 +57,7 @@ flush_r() {
 	ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
 	ipset -X ss_spec_lan_ac 2>/dev/null
 	ipset -X ss_spec_wan_ac 2>/dev/null
-	echo '#!/bin/sh' >$FWI
+	[ -n "$FWI" ] && echo '#!/bin/sh' >$FWI
 	return 0
 }
 
@@ -157,6 +157,7 @@ EOF
 }
 
 gen_include() {
+	[ -n "$FWI" ] || return 0
 	extract_rules() {
 		echo "*$1"
 		iptables-save -t $1 | grep SS_SPEC_ |\
