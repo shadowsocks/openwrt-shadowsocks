@@ -33,7 +33,7 @@ Shadowsocks-libev for OpenWrt with ss-server
 
    > 官方原版服务器端
    > 可执行文件 `ss-server`  
-   > 默认启动: 
+   > 默认启动:  
    > `ss-server` 提供 shadowsocks 服务  
 
 编译
