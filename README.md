@@ -17,7 +17,7 @@ Shadowsocks-libev-full for OpenWrt
    > 官方原版
    > 可执行文件 `ss-{local,redir,tunnel}`  
    > 默认启动:  
-   > `ss-redir` 提供透明代理, 从 v2.2.0 开始支持 UDP  
+   > `ss-redir` 提供透明代理  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
 
  - shadowsocks-libev-spec
@@ -25,7 +25,7 @@ Shadowsocks-libev-full for OpenWrt
    > 针对 OpenWrt 的优化版本
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
-   > `ss-redir` 提供透明代理, 从 v2.2.0 开始支持 UDP  
+   > `ss-redir` 提供透明代理  
    > `ss-rules` 生成代理转发规则  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
 
@@ -46,11 +46,11 @@ Shadowsocks-libev-full for OpenWrt
    tar xjf OpenWrt-SDK-15.05-ar71xx-generic_gcc-4.8-linaro_uClibc-0.9.33.2.Linux-x86_64.tar.bz2
    cd OpenWrt-SDK-15.05-ar71xx-*
    # 获取 Makefile
-   git clone https://github.com/bettermanbao/openwrt-shadowsocks-libev-full.git package/shadowsocks-libev
+   git clone https://github.com/bettermanbao/openwrt-shadowsocks-libev-full.git package/shadowsocks-libev-full
    # 选择要编译的包 Network -> shadowsocks-libev
    make menuconfig
    # 开始编译
-   make package/shadowsocks-libev/compile V=99
+   make package/shadowsocks-libev-full/compile V=s
    ```
 
 配置
