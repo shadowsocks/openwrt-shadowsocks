@@ -1,4 +1,4 @@
-Shadowsocks-libev for OpenWrt with ss-server
+Shadowsocks-libev-full for OpenWrt (with ss-server)
 ===
 
 简介
