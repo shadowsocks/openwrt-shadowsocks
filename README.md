@@ -6,6 +6,7 @@ Shadowsocks-libev-full for OpenWrt
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的完整移植，包括服务器端和客户端。   
  当前版本: 2.4.5-1  
+ [预编译ipk下载][R]
 
 特性
 ---
@@ -69,5 +70,6 @@ Shadowsocks-libev-full for OpenWrt
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
+  [R]: https://github.com/bettermanbao/openwrt-shadowsocks-libev-full/releases
   [L]: https://github.com/aa65535/openwrt-dist-luci
   [S]: http://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
