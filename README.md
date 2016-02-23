@@ -62,7 +62,7 @@ Shadowsocks-libev for OpenWrt with ss-server
 
  - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
 
- - shadowsocks-libev-server 配置文件: `/etc/config/shadowsocks-server`
+ - shadowsocks-libev-server 配置文件: `/etc/config/shadowsocks-server.json`
 
 ----------
 
