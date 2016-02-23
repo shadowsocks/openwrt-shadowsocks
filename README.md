@@ -43,7 +43,7 @@ Shadowsocks-libev-full for OpenWrt
  - 从 OpenWrt 的 [SDK][S] 编译
 
    ```bash
-   # 以 OpenWrt Chaos Calmer 10.05 ar71xx 平台为例
+   # 以 OpenWrt Chaos Calmer 15.05 ar71xx 平台为例
    wget https://downloads.openwrt.org/chaos_calmer/15.05/ar71xx/generic/OpenWrt-SDK-15.05-ar71xx-generic_gcc-4.8-linaro_uClibc-0.9.33.2.Linux-x86_64.tar.bz2
    tar xjf OpenWrt-SDK-15.05-ar71xx-generic_gcc-4.8-linaro_uClibc-0.9.33.2.Linux-x86_64.tar.bz2
    cd OpenWrt-SDK-15.05-ar71xx-*
