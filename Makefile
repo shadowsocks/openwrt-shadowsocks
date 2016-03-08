@@ -117,6 +117,7 @@ define Package/shadowsocks-libev-gfwlist/install
 	$(INSTALL_DIR) $(1)/etc/dnsmasq.d
 	$(INSTALL_CONF) ./files/dnsmasq_list.conf $(1)/etc/dnsmasq.d/dnsmasq_list.conf
 	$(INSTALL_CONF) ./files/custom_list.conf $(1)/etc/dnsmasq.d/custom_list.conf
+	$(INSTALL_DIR) $(1)/root
 	$(INSTALL_BIN) ./files/ss-watchdog $(1)/root/ss-watchdog
 endef
 
