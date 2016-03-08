@@ -38,7 +38,7 @@ Shadowsocks-libev-full for OpenWrt
      >> ```bash
      >> opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-1_*.ipk  
      >> ```
-     >> 安装结束时会提示有一个文件已经存在，这是升级dnsmasq-full时的配置文件残留，可以忽略。  
+     >> 安装结束时会提示一条错误信息，这是升级dnsmasq-full时的配置文件残留造成的，可以忽略。  
 
  - shadowsocks-libev-server
 
