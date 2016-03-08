@@ -30,7 +30,7 @@ Shadowsocks-libev-full for OpenWrt
    > 默认启动:  
    > `ss-redir` 提供透明代理  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询。  
-   > `ss-watchdog` 守护进程，每10分钟检查一次www.google.com的联通情况。
+   > `ss-watchdog` 守护进程，每10分钟检查一次 www.google.com.hk 的联通情况。
    
    > 安装方法：  
      >> 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-1_*.ipk 上传到路由器 /tmp 目录  
