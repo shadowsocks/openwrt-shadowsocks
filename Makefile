@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=2.4.5
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/shadowsocks/openwrt-shadowsocks/releases/download/v$(PKG_VERSION)
@@ -40,7 +40,7 @@ endef
 Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
 Package/shadowsocks-libev-gfwlist = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL), +libopenssl +libpthread +dnsmasq-full +ipset +iptables +wget)
 Package/shadowsocks-libev-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread)
-Package/shadowsocks-libev-gfwlist-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL), +libpolarssl +libpthread +dnsmasq-full +ipset +iptables +wget)
+Package/shadowsocks-libev-gfwlist-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL), +libpolarssl +libpthread +dnsmasq-full +ipset +iptables +wget-nossl)
 
 Package/shadowsocks-libev-server = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
 Package/shadowsocks-libev-server-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread)
@@ -76,7 +76,9 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	echo "ipset -N gfwlist iphash" >> /etc/firewall.user
 	echo "iptables -t nat -A PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 1080" >> /etc/firewall.user
 	echo "iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 1080" >> /etc/firewall.user
-	/etc/init.d/firewall restart
+	ipset -N gfwlist iphash
+	iptables -t nat -A PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 1080
+	iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 1080
 	
 	echo "cache-size=5000" >> /etc/dnsmasq.conf
 	echo "min-cache-ttl=1800" >> /etc/dnsmasq.conf
@@ -85,7 +87,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	
 	echo "*/10 * * * * /root/ss-watchdog >> /var/log/shadowsocks_watchdog.log 2>&1" >> /etc/crontabs/root
 	echo "0 1 * * 0 echo \"\" > /var/log/shadowsocks_watchdog.log" >> /etc/crontabs/root
-	/etc/init.d/cron restart
+	/usr/bin/crontab /etc/crontabs/root
 	
 	/etc/init.d/shadowsocks restart
 fi
