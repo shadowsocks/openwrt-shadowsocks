@@ -16,6 +16,7 @@ Shadowsocks-libev-full for OpenWrt
  - shadowsocks-libev
 
    > 官方原版客户端  
+   
    > 可执行文件 `ss-{local,redir,tunnel}`  
    > 默认启动:  
    > `ss-redir` 提供透明代理  
@@ -24,6 +25,7 @@ Shadowsocks-libev-full for OpenWrt
  - shadowsocks-libev-gfwlist
 
    > 集成gfwlist的一键安装版客户端，带luci界面  
+   
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
    > `ss-redir` 提供透明代理  
@@ -31,13 +33,17 @@ Shadowsocks-libev-full for OpenWrt
    > `ss-watchdog` 守护进程，每10分钟检查一次www.google.com的联通情况。
    
    > 安装方法：  
-     > 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-1_*.ipk 上传到路由器 /tmp 目录  
-     > 执行 opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-1_*.ipk  
-     > 重启路由器  
+     >> 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-1_*.ipk 上传到路由器 /tmp 目录  
+     >> 带上--force-overwrite 选项运行 opkg install
+     >> ```bash
+     >> opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-1_*.ipk  
+     >> ```
+     >> 安装结束时会提示有一个文件已经存在，这是升级dnsmasq-full时的配置文件残留，可以忽略。  
 
  - shadowsocks-libev-server
 
    > 官方原版服务器端  
+   
    > 可执行文件 `ss-server`  
    > 默认启动:  
    > `ss-server` 提供 shadowsocks 服务  
