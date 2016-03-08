@@ -21,13 +21,12 @@ Shadowsocks-libev-full for OpenWrt
    > `ss-redir` 提供透明代理  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
 
- - shadowsocks-libev-spec
+ - shadowsocks-libev-gfwlist
 
-   > 针对 OpenWrt 的优化版本
+   > 集成gfwlist的一键安装版
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
    > `ss-redir` 提供透明代理  
-   > `ss-rules` 生成代理转发规则  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
 
  - shadowsocks-libev-server
@@ -60,11 +59,9 @@ Shadowsocks-libev-full for OpenWrt
 
  - shadowsocks-libev 配置文件: `/etc/shadowsocks.json`
 
- - shadowsocks-libev-spec 配置文件: `/etc/config/shadowsocks`
+ - shadowsocks-libev-gfwlist 配置文件: `/etc/shadowsocks`
 
- - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
-
- - shadowsocks-libev-server 配置文件: `/etc/config/shadowsocks-server.json`
+ - shadowsocks-libev-server 配置文件: `/etc/shadowsocks-server.json`
 
 ----------
 
