@@ -11,31 +11,33 @@ Shadowsocks-libev-full for OpenWrt
 特性
 ---
 
-可编译 两种客户端版本 和 一种服务器端版本
+可编译 两种客户端版本 和 一种服务器端版本。
 
  - shadowsocks-libev
 
-   > 官方原版客户端
-   
+   > 官方原版客户端  
    > 可执行文件 `ss-{local,redir,tunnel}`  
    > 默认启动:  
    > `ss-redir` 提供透明代理  
-   > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
+   > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询。  
 
  - shadowsocks-libev-gfwlist
 
-   > 集成gfwlist的一键安装版客户端，带luci界面。
-   
+   > 集成gfwlist的一键安装版客户端，带luci界面  
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
    > `ss-redir` 提供透明代理  
-   > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
-   > `ss-watchdog` 守护进程，每10分钟检查一次www.google.com的联通情况
+   > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询。  
+   > `ss-watchdog` 守护进程，每10分钟检查一次www.google.com的联通情况。
+   
+   > 安装方法：  
+     > 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-1_*.ipk 上传到路由器 /tmp 目录  
+     > 执行 opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-1_*.ipk  
+     > 重启路由器  
 
  - shadowsocks-libev-server
 
-   > 官方原版服务器端
-   
+   > 官方原版服务器端  
    > 可执行文件 `ss-server`  
    > 默认启动:  
    > `ss-server` 提供 shadowsocks 服务  
