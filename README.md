@@ -30,6 +30,7 @@ Shadowsocks-libev-full for OpenWrt
    > 默认启动:  
    > `ss-redir` 提供透明代理  
    > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
+   > `ss-watchdog` 守护进程，每10分钟检查一次www.google.com的联通情况
 
  - shadowsocks-libev-server
 
