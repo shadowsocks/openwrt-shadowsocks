@@ -1,7 +1,7 @@
 #!/bin/sh
 
 LOGTIME=$(date "+%Y-%m-%d %H:%M:%S")
-wget -4 --spider --quiet --tries=1 --timeout=3 www.google.com
+wget -4 --spider --quiet --tries=1 --timeout=3 www.google.com/ncr
 if [ "$?" == "0" ]; then
 	echo '['$LOGTIME'] No Problem.'
 	exit 0
