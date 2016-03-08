@@ -128,8 +128,8 @@ define Package/shadowsocks-libev-server/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-server $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_CONF) ./files/shadowsocks-server.conf $(1)/etc/shadowsocks-server.json
-	$(INSTALL_BIN) ./files/shadowsocks-server.init $(1)/etc/init.d/shadowsocks-server
+	$(INSTALL_CONF) ./files/shadowsocks-server.json $(1)/etc/shadowsocks-server.json
+	$(INSTALL_BIN) ./files/shadowsocks-server $(1)/etc/init.d/shadowsocks-server
 endef
 
 Package/shadowsocks-libev-server-polarssl/install = $(Package/shadowsocks-libev-server/install)
