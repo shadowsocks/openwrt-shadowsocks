@@ -80,5 +80,4 @@ Shadowsocks-libev-full for OpenWrt
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
   [R]: https://github.com/bettermanbao/openwrt-shadowsocks-libev-full/releases
-  [L]: https://github.com/aa65535/openwrt-dist-luci
   [S]: http://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
