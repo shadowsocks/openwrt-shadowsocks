@@ -88,6 +88,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	/etc/init.d/cron restart
 	
 	/etc/init.d/shadowsocks restart
+	/root/ss-watchdog
 fi
 exit 0
 endef
