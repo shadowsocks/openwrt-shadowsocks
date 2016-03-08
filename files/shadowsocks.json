@@ -1,8 +1,8 @@
 {
-    "server": "127.0.0.1",
-    "server_port": 443,
+    "server": "serv-ro.ddns.info",
+    "server_port": 23143,
     "local_port": 1080,
-    "password": "password",
+    "password": "test.TEST",
     "timeout": 60,
-    "method": "rc4-md5"
+    "method": "aes-256-cfb"
 }
