@@ -1,12 +1,12 @@
 #!/bin/sh
 
 LOGTIME=$(date "+%Y-%m-%d %H:%M:%S")
-wget -4 --spider --quiet --tries=1 --timeout=3 www.google.com/ncr
+wget --spider --quiet www.google.com/ncr
 if [ "$?" == "0" ]; then
 	echo '['$LOGTIME'] No Problem.'
 	exit 0
 else
-	wget -4 --spider --quiet --tries=1 --timeout=3 www.baidu.com
+	wget --spider --quiet www.baidu.com
 	if [ "$?" == "0" ]; then
 		echo '['$LOGTIME'] Problem decteted, restarting shadowsocks.'
 		/etc/init.d/shadowsocks restart
