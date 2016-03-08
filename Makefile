@@ -40,7 +40,7 @@ endef
 Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
 Package/shadowsocks-libev-gfwlist = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL), +libopenssl +libpthread +dnsmasq-full +ipset +iptables +wget)
 Package/shadowsocks-libev-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread)
-Package/shadowsocks-libev-gfwlist-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL), +libopenssl +libpthread +dnsmasq-full +ipset +iptables +wget)
+Package/shadowsocks-libev-gfwlist-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL), +libpolarssl +libpthread +dnsmasq-full +ipset +iptables +wget)
 
 Package/shadowsocks-libev-server = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
 Package/shadowsocks-libev-server-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread)
