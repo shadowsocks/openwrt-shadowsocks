@@ -2,7 +2,7 @@
     "server": "0.0.0.0",
     "server_port": 443,
     "local_port": 1080,
-    "password": "server-password",
+    "password": "password",
     "timeout": 60,
     "method": "rc4-md5"
 }
