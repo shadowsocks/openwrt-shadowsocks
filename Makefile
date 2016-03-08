@@ -120,6 +120,14 @@ define Package/shadowsocks-libev-gfwlist/install
 	$(INSTALL_CONF) ./files/custom_list.conf $(1)/etc/dnsmasq.d/custom_list.conf
 	$(INSTALL_DIR) $(1)/root
 	$(INSTALL_BIN) ./files/ss-watchdog $(1)/root/ss-watchdog
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
+	$(INSTALL_CONF) ./files/shadowsocks-libev.lua $(1)/usr/lib/lua/luci/controller/shadowsocks-libev.lua
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/shadowsocks-libev
+	$(INSTALL_CONF) ./files/shadowsocks-libev-general.lua $(1)/usr/lib/lua/luci/model/cbi/shadowsocks-libev/shadowsocks-libev-general.lua
+	$(INSTALL_CONF) ./files/shadowsocks-libev-custom.lua $(1)/usr/lib/lua/luci/model/cbi/shadowsocks-libev/shadowsocks-libev-custom.lua
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/shadowsocks-libev
+	$(INSTALL_CONF) ./files/gfwlist.htm $(1)/usr/lib/lua/luci/view/shadowsocks-libev/gfwlist.htm
+	$(INSTALL_CONF) ./files/watchdog.htm $(1)/usr/lib/lua/luci/view/shadowsocks-libev/watchdog.htm
 endef
 
 Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
