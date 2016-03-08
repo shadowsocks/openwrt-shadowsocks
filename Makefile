@@ -92,7 +92,7 @@ fi
 exit 0
 endef
 
-Package/shadowsocks-libev-gfwlist-polarssl/postinst = $(Package/shadowsocks-libev-spec/postinst)
+Package/shadowsocks-libev-gfwlist-polarssl/postinst = $(Package/shadowsocks-libev-gfwlist/postinst)
 
 CONFIGURE_ARGS += --disable-ssp
 
