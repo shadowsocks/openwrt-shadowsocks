@@ -24,7 +24,7 @@ Shadowsocks-libev-full for OpenWrt
 
  - shadowsocks-libev-gfwlist
 
-   > 集成gfwlist的一键安装版客户端
+   > 集成gfwlist的一键安装版客户端，带luci界面。
    
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
