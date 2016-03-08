@@ -15,7 +15,7 @@ Shadowsocks-libev-full for OpenWrt
 
  - shadowsocks-libev
 
-   > 官方原版
+   > 官方原版客户端
    
    > 可执行文件 `ss-{local,redir,tunnel}`  
    > 默认启动:  
@@ -24,7 +24,7 @@ Shadowsocks-libev-full for OpenWrt
 
  - shadowsocks-libev-gfwlist
 
-   > 集成gfwlist的一键安装版
+   > 集成gfwlist的一键安装版客户端
    
    > 可执行文件 `ss-{redir,rules,tunnel}`  
    > 默认启动:  
