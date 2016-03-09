@@ -87,7 +87,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	
 	echo "*/10 * * * * /root/ss-watchdog >> /var/log/shadowsocks_watchdog.log 2>&1" >> /etc/crontabs/root
 	echo "0 1 * * 0 echo \"\" > /var/log/shadowsocks_watchdog.log" >> /etc/crontabs/root
-	/usr/bin/crontab /etc/crontabs/root
+	/etc/init.d/cron restart
 	
 	/etc/init.d/shadowsocks restart
 fi
