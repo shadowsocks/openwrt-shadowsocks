@@ -33,9 +33,9 @@ Shadowsocks-libev-full for OpenWrt
    > `ss-watchdog` 守护进程，每10分钟检查一次 www.google.com.hk 的联通情况。
    
    > 安装方法：  
-     >> shadowsocks-libev-gfwlist_2.4.5-3_*.ipk 使用openssl加密库 完整安装需要约 5.0M 空间  
-     >> shadowsocks-libev-gfwlist-polarssl_2.4.5-3_*.ipk 使用polarssl加密库 完整安装需要约 3.5M 空间  
-     >> 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-3_*.ipk 上传到路由器 /tmp 目录  
+     >> shadowsocks-libev-gfwlist_2.4.5-3.ipk 使用openssl加密库 完整安装需要约 5.0M 空间  
+     >> shadowsocks-libev-gfwlist-polarssl_2.4.5-3.ipk 使用polarsslssl加密库 完整安装需要约 3.5M 空间  
+     >> 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-3.ipk 上传到路由器 /tmp 目录  
      >> 带上--force-overwrite 选项运行 opkg install
      >> ```bash
      >> opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-3_*.ipk  
