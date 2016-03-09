@@ -36,7 +36,7 @@ Shadowsocks-libev-full for OpenWrt
      >> 用 winscp 把对应平台的 shadowsocks-libev-gfwlist_2.4.5-1_*.ipk 上传到路由器 /tmp 目录  
      >> 带上--force-overwrite 选项运行 opkg install
      >> ```bash
-     >> opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist_2.4.5-1_*.ipk  
+     >> opkg --force-overwrite install /tmp/shadowsocks-libev-gfwlist*.ipk  
      >> ```
      >> 安装结束时会提示一条错误信息，这是升级dnsmasq-full时的配置文件残留造成的，可以忽略。  
 
