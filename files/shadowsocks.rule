@@ -113,6 +113,7 @@ EOF
 }
 
 tp_rule() {
+	lsmod | grep -q TPROXY || return 0
 	[ -n "$TPROXY" ] || return 0
 	ip rule add fwmark 0x01/0x01 table 100
 	ip route add local 0.0.0.0/0 dev lo table 100
