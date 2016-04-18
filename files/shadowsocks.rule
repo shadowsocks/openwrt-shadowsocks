@@ -43,7 +43,7 @@ loger() {
 }
 
 flush_r() {
-	iptables-save | grep -v "$TAG" | iptables-restore
+	iptables-save -c | grep -v "$TAG" | iptables-restore -c
 	ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
 	ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
 	ipset -X ss_spec_lan_ac 2>/dev/null
