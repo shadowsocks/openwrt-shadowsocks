@@ -5,8 +5,7 @@ Shadowsocks-libev for OpenWrt
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: 2.4.5-1  
- [预编译 IPK 下载][2]  
+ 当前版本: [2.4.5-1][2]  
 
 特性
 ---
@@ -15,18 +14,34 @@ Shadowsocks-libev for OpenWrt
 
  - shadowsocks-libev
 
-   > 官方原版  
-   > 可执行文件 `ss-{local,redir,tunnel}`  
-   > 默认启动: ss-local 提供 SOCKS 代理  
+   ```
+   原版/
+   ├── etc/
+   │   ├── init.d/
+   │   │   └── shadowsocks   // init 脚本
+   │   └── shadowsocks.json  // 配置文件
+   └── usr/
+       └── bin/
+           ├── ss-local       // 提供 SOCKS 代理
+           ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP, 默认不启动
+           └── ss-tunnel      // 提供 UDP 转发, 用于 DNS 查询, 默认不启动
+   ```
 
  - shadowsocks-libev-spec
 
-   > 针对 OpenWrt 的优化版本  
-   > 可执行文件 `ss-{redir,rules,tunnel}`  
-   > 默认启动:  
-   > `ss-redir` 提供透明代理, 从 v2.2.0 开始支持 UDP  
-   > `ss-rules` 生成代理转发规则  
-   > `ss-tunnel` 提供 UDP 转发, 用于 DNS 查询  
+   ```
+   优化版/
+   ├── etc/
+   │   ├── config/
+   │   │   └── shadowsocks   // UCI 配置文件
+   │   └── init.d/
+   │       └── shadowsocks   // init 脚本
+   └── usr/
+       └── bin/
+           ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP
+           ├── ss-rules       // 生成代理转发规则的脚本
+           └── ss-tunnel      // 提供 UDP 转发, 用于 DNS 查询
+   ```
 
 编译
 ---
@@ -52,12 +67,10 @@ Shadowsocks-libev for OpenWrt
 
  - shadowsocks-libev-spec 配置文件: `/etc/config/shadowsocks`
 
- - shadowsocks-libev-spec 从 `v1.5.2` 开始可以使用 [LuCI][L] 配置界面
-
-----------
+ - shadowsocks-libev-spec 从 `v1.5.2` 开始支持 [LuCI][L] 界面配置
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
-  [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/
-  [L]: https://github.com/aa65535/openwrt-dist-luci
-  [S]: http://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
+  [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/ "预编译 IPK 下载"
+  [L]: https://github.com/aa65535/openwrt-dist-luci "luci-app-shadowsocks-spec"
+  [S]: https://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
