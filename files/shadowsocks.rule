@@ -56,6 +56,7 @@ ipset_r() {
 	ipset -! -R <<-EOF || return 1
 		create ss_spec_wan_ac hash:net
 		$(gen_iplist | sed -e "s/^/add ss_spec_wan_ac /")
+		$(sed -e "s/^/add ss_spec_wan_ac /" ${IGNORED:=/dev/null} 2>/dev/null)
 		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_ac $ip nomatch"; done)
 EOF
 	$IPT -N SS_SPEC_WAN_AC && \
@@ -116,16 +117,8 @@ tp_rule() {
 	return $?
 }
 
-get_wan_ip() {
-	cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
-		$server
-		$SERVER
-		$WAN_BP_IP
-EOF
-}
-
 gen_iplist() {
-	cat <<-EOF
+	cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 		0.0.0.0/8
 		10.0.0.0/8
 		100.64.0.0/10
@@ -142,8 +135,9 @@ gen_iplist() {
 		224.0.0.0/4
 		240.0.0.0/4
 		255.255.255.255
-		$(get_wan_ip)
-		$(cat ${IGNORE_LIST:=/dev/null} 2>/dev/null)
+		$server
+		$SERVER
+		$WAN_BP_IP
 EOF
 }
 
@@ -173,7 +167,7 @@ while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
 			LOCAL_PORT=$OPTARG
 			;;
 		i)
-			IGNORE_LIST=$OPTARG
+			IGNORED=$OPTARG
 			;;
 		e)
 			EXT_ARGS=$OPTARG
