@@ -118,6 +118,10 @@ start() {
 
 stop() {
 	/usr/bin/ss-rules -f
-	killall -q -9 ss-redir
-	killall -q -9 ss-tunnel
+	if [ -f /var/run/ss-tunnel.pid ]; then      
+		kill -9 `cat /var/run/ss-tunnel.pid`
+	fi
+	if [ -f /var/run/ss-redir.pid ]; then
+		kill -9 `cat /var/run/ss-redir.pid`
+	fi 
 }
