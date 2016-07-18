@@ -118,6 +118,7 @@ start() {
 
 kill_pid() {
 	local pid=$(cat $1 2>/dev/null)
+	rm -f $1
 	if [ -n "$pid" -a -d "/proc/$pid" ]; then
 		kill -9 $pid
 	fi
