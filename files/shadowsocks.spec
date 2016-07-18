@@ -116,8 +116,16 @@ start() {
 	esac
 }
 
+kill_pid() {
+	local pid=$(cat $1 2>/dev/null)
+	if [ -n "$pid" -a -d "/proc/$pid" ]; then
+		kill -9 $pid
+	fi
+}
+
 stop() {
 	/usr/bin/ss-rules -f
-	killall -q -9 ss-redir
-	killall -q -9 ss-tunnel
+	kill_pid /var/run/ss-redir.pid
+	kill_pid /var/run/ss-redir-tcp.pid
+	kill_pid /var/run/ss-tunnel.pid
 }
