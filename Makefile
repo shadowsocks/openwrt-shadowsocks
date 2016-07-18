@@ -13,7 +13,7 @@ PKG_VERSION:=2.4.7
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/shadowsocks/openwrt-shadowsocks/releases/download/v$(PKG_VERSION)
+PKG_SOURCE_URL:=https://github.com/shadowsocks/openwrt-shadowsocks/releases/download/$(PKG_VERSION)/$(PKG_SOURCE)
 PKG_MD5SUM:=e08ba321cb8b7778597942d529cedfba
 
 PKG_LICENSE:=GPLv3
