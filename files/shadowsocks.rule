@@ -47,22 +47,27 @@ flush_r() {
 	ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
 	ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
 	ipset -X ss_spec_lan_ac 2>/dev/null
-	ipset -X ss_spec_wan_ac 2>/dev/null
+	ipset -X ss_spec_wan_bp 2>/dev/null
+	ipset -X ss_spec_wan_fw 2>/dev/null
 	[ -n "$FWI" ] && echo '#!/bin/sh' >$FWI
 	return 0
 }
 
 ipset_r() {
 	ipset -! -R <<-EOF || return 1
-		create ss_spec_wan_ac hash:net
-		$(gen_iplist | sed -e "s/^/add ss_spec_wan_ac /")
-		$(sed -e "s/^/add ss_spec_wan_ac /" ${IGNORED:=/dev/null} 2>/dev/null)
-		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_ac $ip nomatch"; done)
+		create ss_spec_lan_ac hash:net
+		$(for ip in ${LAN_AC_IP:1}; do echo "add ss_spec_lan_ac $ip"; done)
 EOF
-	$IPT -N SS_SPEC_WAN_AC && \
-	$IPT -A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_ac dst -j RETURN && \
-	$IPT -A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
-	return $?
+	ipset -! -R <<-EOF || return 1
+		create ss_spec_wan_bp hash:net
+		$(gen_iplist | sed -e "s/^/add ss_spec_wan_bp /")
+		$(sed -e "s/^/add ss_spec_wan_bp /" ${IGNORED:=/dev/null} 2>/dev/null)
+EOF
+	ipset -! -R <<-EOF || return 1
+		create ss_spec_wan_fw hash:net
+		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_fw $ip"; done)
+EOF
+	return 0
 }
 
 fw_rule() {
@@ -72,7 +77,7 @@ fw_rule() {
 		loger 3 "Can't redirect, please check the iptables."
 		exit 1
 	}
-	return $?
+	return 0
 }
 
 ac_rule() {
@@ -91,10 +96,7 @@ ac_rule() {
 		esac
 	fi
 	IFNAME=$(uci get -P/var/state network.lan.ifname 2>/dev/null)
-	ipset -! -R <<-EOF || return 1
-		create ss_spec_lan_ac hash:net
-		$(for ip in ${LAN_AC_IP:1}; do echo "add ss_spec_lan_ac $ip"; done)
-EOF
+	gen_wan_ac_rules nat
 	$IPT -I PREROUTING 1 ${IFNAME:+-i $IFNAME} -p tcp $EXT_ARGS $MATCH_SET \
 		-j SS_SPEC_WAN_AC
 	if [ "$OUTPUT" = 1 ]; then
@@ -109,12 +111,35 @@ tp_rule() {
 	ip rule add fwmark 0x01/0x01 table 100
 	ip route add local 0.0.0.0/0 dev lo table 100
 	local ipt="iptables -t mangle"
-	$ipt -N SS_SPEC_TPROXY
-	$ipt -A SS_SPEC_TPROXY -p udp -m set ! --match-set ss_spec_wan_ac dst \
-		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
+	$ipt -N SS_SPEC_WAN_FW && \
+	$ipt -A SS_SPEC_WAN_FW -p udp -j TPROXY --on-port "$LOCAL_PORT" \
+		--tproxy-mark 0x01/0x01
+	gen_wan_ac_rules mangle
 	$ipt -I PREROUTING 1 ${IFNAME:+-i $IFNAME} -p udp $EXT_ARGS $MATCH_SET \
-		-j SS_SPEC_TPROXY
+		-j SS_SPEC_WAN_AC
 	return $?
+}
+
+gen_include() {
+	[ -n "$FWI" ] || return 0
+	cat <<-CAT >>$FWI
+	iptables-restore -n <<-EOF
+	$(iptables-save | grep -E "$TAG|^\*|^COMMIT" |\
+			sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
+	EOF
+CAT
+	return $?
+}
+
+gen_wan_ac_rules() {
+	iptables-restore -n <<-EOF
+	*$1
+	:SS_SPEC_WAN_AC - [0:0]
+	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_fw dst -j SS_SPEC_WAN_FW
+	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_bp dst -j RETURN
+	-A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
+	COMMIT
+EOF
 }
 
 gen_iplist() {
@@ -139,17 +164,6 @@ gen_iplist() {
 		$SERVER
 		$WAN_BP_IP
 EOF
-}
-
-gen_include() {
-	[ -n "$FWI" ] || return 0
-	cat <<-EOF >>$FWI
-	iptables-restore -n <<-EOT
-	$(iptables-save | grep -E "$TAG|^\*|^COMMIT" |\
-			sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
-	EOT
-EOF
-	return $?
 }
 
 while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
@@ -200,9 +214,7 @@ while getopts ":s:l:S:L:i:e:a:b:w:ouUfh" arg; do
 	esac
 done
 
-if [ -z "$server" -o -z "$local_port" ]; then
-	usage 2
-fi
+[ -z "$server" -o -z "$local_port" ] && usage 2
 
 if [ "$TPROXY" = 1 ]; then
 	SERVER=$server
@@ -212,6 +224,6 @@ elif [ "$TPROXY" = 2 ]; then
 	: ${LOCAL_PORT:?"You must assign a port for the udp relay server."}
 fi
 
-flush_r && fw_rule && ipset_r && ac_rule && tp_rule && gen_include
+flush_r && ipset_r && fw_rule && ac_rule && tp_rule && gen_include
 [ "$?" = 0 ] || loger 3 "Start failed!"
 exit $?
