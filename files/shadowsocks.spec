@@ -41,8 +41,6 @@ EOF
 start_rules() {
 	local server=$(uci_get_by_name $GLOBAL_SERVER server)
 	local local_port=$(uci_get_by_name $GLOBAL_SERVER local_port)
-	local lan_ac_ips=$(uci_get_by_type access_control lan_ac_ips)
-	local lan_ac_mode=$(uci_get_by_type access_control lan_ac_mode)
 	if [ "$GLOBAL_SERVER" = "$UDP_RELAY_SERVER" ]; then
 		ARG_UDP="-u"
 	elif [ -n "$UDP_RELAY_SERVER" ]; then
@@ -50,20 +48,17 @@ start_rules() {
 		local udp_server=$(uci_get_by_name $UDP_RELAY_SERVER server)
 		local udp_local_port=$(uci_get_by_name $UDP_RELAY_SERVER local_port)
 	fi
-	if [ -n "$lan_ac_ips" ]; then
-		case "$lan_ac_mode" in
-			w|W|b|B) local ac_ips="$lan_ac_mode$lan_ac_ips";;
-		esac
-	fi
 	/usr/bin/ss-rules \
 		-s "$server" \
 		-l "$local_port" \
 		-S "$udp_server" \
 		-L "$udp_local_port" \
-		-a "$ac_ips" \
 		-i "$(uci_get_by_type access_control wan_bp_list)" \
 		-b "$(uci_get_by_type access_control wan_bp_ips)" \
 		-w "$(uci_get_by_type access_control wan_fw_ips)" \
+		-d "$(uci_get_by_type access_control lan_default_target)" \
+		-I "$(uci_get_by_type access_control interface lan)" \
+		-a "$(uci_get_by_type access_control lan_hosts_action)" \
 		-e "$(uci_get_by_type access_control ipt_ext)" \
 		-o $ARG_UDP
 	return $?
