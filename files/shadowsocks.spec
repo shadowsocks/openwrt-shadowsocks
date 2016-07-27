@@ -61,7 +61,9 @@ start_rules() {
 		-a "$(uci_get_by_type access_control lan_hosts_action)" \
 		-e "$(uci_get_by_type access_control ipt_ext)" \
 		-o $ARG_UDP
-	return $?
+		local ret=$?
+		[ "$ret" = 0 ] || /usr/bin/ss-rules -f
+	return $ret
 }
 
 start_redir() {

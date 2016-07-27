@@ -257,5 +257,6 @@ elif [ "$TPROXY" = 2 ]; then
 fi
 
 flush_r && ipset_r && ac_rule && tp_rule && gen_include
-[ "$?" = 0 ] || loger 3 "Start failed!"
-exit $?
+RET=$?
+[ "$RET" = 0 ] || loger 3 "Start failed!"
+exit $RET
