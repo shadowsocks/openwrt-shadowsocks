@@ -23,8 +23,8 @@ usage() {
 		    -i <ip_list_file>       a file content is bypassed ip list
 		    -b <wan_ips>            wan ip of will be bypassed
 		    -w <wan_ips>            wan ip of will be forwarded
-		    -d <target>             the default target of lan access control
 		    -I <interface>          proxy only for the given interface
+		    -d <target>             the default target of lan access control
 		    -a <hosts_action>       lan ip of access control, need a prefix to
 		                            define access control mode
 		    -e <extra_options>      extra options for iptables
@@ -192,7 +192,7 @@ gen_iplist() {
 EOF
 }
 
-while getopts ":s:l:S:L:i:b:w:d:I:a:e:ouUfh" arg; do
+while getopts ":s:l:S:L:i:b:w:I:d:a:e:ouUfh" arg; do
 	case "$arg" in
 		s)
 			server=$OPTARG
@@ -215,11 +215,11 @@ while getopts ":s:l:S:L:i:b:w:d:I:a:e:ouUfh" arg; do
 		w)
 			WAN_FW_IP=$OPTARG
 			;;
-		d)
-			LAN_DEFAULT_TARGET=$OPTARG
-			;;
 		I)
 			IFNAMES=$OPTARG
+			;;
+		d)
+			LAN_DEFAULT_TARGET=$OPTARG
 			;;
 		a)
 			LAN_HOSTS_ACTION=$OPTARG
