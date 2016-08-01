@@ -152,7 +152,7 @@ gen_prerouting_rules() {
 		return 0
 	fi
 	for ifname in $IFNAMES; do
-		ifname=$(uci get -P/var/state network.$ifname.ifname 2>/dev/null)
+		ifname=$(uci -P/var/state get network.$ifname.ifname 2>/dev/null)
 		[ -z "$ifname" ] && continue
 		echo -I PREROUTING 1 -i $ifname -p $protocol $EXT_ARGS -j SS_SPEC_LAN_AC
 	done
