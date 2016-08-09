@@ -79,7 +79,7 @@ endef
 
 Package/shadowsocks-libev-spec-polarssl/postinst = $(Package/shadowsocks-libev-spec/postinst)
 
-CONFIGURE_ARGS += --disable-ssp
+CONFIGURE_ARGS += --disable-ssp --disable-documentation
 
 ifeq ($(BUILD_VARIANT),polarssl)
 	CONFIGURE_ARGS += --with-crypto-library=polarssl
