@@ -56,8 +56,8 @@ start_rules() {
 		-i "$(uci_get_by_type access_control wan_bp_list)" \
 		-b "$(uci_get_by_type access_control wan_bp_ips)" \
 		-w "$(uci_get_by_type access_control wan_fw_ips)" \
+		-I "$(uci_get_by_type access_control lan_ifaces br-lan)" \
 		-d "$(uci_get_by_type access_control lan_default_target)" \
-		-I "$(uci_get_by_type access_control interface lan)" \
 		-a "$(uci_get_by_type access_control lan_hosts_action)" \
 		-e "$(uci_get_by_type access_control ipt_ext)" \
 		-o $ARG_UDP
