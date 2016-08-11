@@ -38,6 +38,14 @@ gen_config_file() {
 EOF
 }
 
+gen_lan_hosts_action() {
+	case "$(uci_get_by_name $1 enable)" in
+		1|on|true|yes|enabled)
+			echo "$(uci_get_by_name $1 action),$(uci_get_by_name $1 host)"
+			;;
+	esac
+}
+
 start_rules() {
 	local server=$(uci_get_by_name $GLOBAL_SERVER server)
 	local local_port=$(uci_get_by_name $GLOBAL_SERVER local_port)
@@ -48,6 +56,7 @@ start_rules() {
 		local udp_server=$(uci_get_by_name $UDP_RELAY_SERVER server)
 		local udp_local_port=$(uci_get_by_name $UDP_RELAY_SERVER local_port)
 	fi
+	config_load $NAME
 	/usr/bin/ss-rules \
 		-s "$server" \
 		-l "$local_port" \
@@ -58,7 +67,7 @@ start_rules() {
 		-w "$(uci_get_by_type access_control wan_fw_ips)" \
 		-I "$(uci_get_by_type access_control lan_ifaces br-lan)" \
 		-d "$(uci_get_by_type access_control lan_default_target)" \
-		-a "$(uci_get_by_type access_control lan_hosts_action)" \
+		-a "$(echo $(config_foreach gen_lan_hosts_action lan_hosts_action))" \
 		-e "$(uci_get_by_type access_control ipt_ext)" \
 		-o $ARG_UDP
 		local ret=$?
