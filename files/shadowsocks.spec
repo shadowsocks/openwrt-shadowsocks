@@ -76,7 +76,7 @@ start_rules() {
 }
 
 start_redir() {
-	case "$(uci_get_by_name $GLOBAL_SERVER auth_enable)" in
+	case "$(uci_get_by_name $GLOBAL_SERVER auth)" in
 		1|on|true|yes|enabled) ARG_OTA="-A";;
 		*) ARG_OTA="";;
 	esac
@@ -85,7 +85,7 @@ start_redir() {
 		/usr/bin/ss-redir \
 			-c $CONFIG_FILE $ARG_OTA \
 			-f /var/run/ss-redir-tcp.pid
-		case "$(uci_get_by_name $UDP_RELAY_SERVER auth_enable)" in
+		case "$(uci_get_by_name $UDP_RELAY_SERVER auth)" in
 			1|on|true|yes|enabled) ARG_OTA="-A";;
 			*) ARG_OTA="";;
 		esac
@@ -100,8 +100,8 @@ start_redir() {
 start_tunnel() {
 	/usr/bin/ss-tunnel \
 		-c $CONFIG_FILE $ARG_OTA ${ARG_UDP:="-u"} \
-		-l $(uci_get_by_type udp_forward tunnel_port 5300) \
-		-L $(uci_get_by_type udp_forward tunnel_forward 8.8.4.4:53) \
+		-l $(uci_get_by_type port_forward local_port 5300) \
+		-L $(uci_get_by_type port_forward destination 8.8.4.4:53) \
 		-f /var/run/ss-tunnel.pid
 	return $?
 }
@@ -117,7 +117,7 @@ rules() {
 
 start() {
 	rules && start_redir
-	case "$(uci_get_by_type udp_forward tunnel_enable)" in
+	case "$(uci_get_by_type port_forward enable)" in
 		1|on|true|yes|enabled) start_tunnel;;
 	esac
 }
