@@ -24,7 +24,7 @@ Shadowsocks-libev for OpenWrt
        └── bin/
            ├── ss-local       // 提供 SOCKS 代理
            ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP, 默认不启动
-           └── ss-tunnel      // 提供 UDP 转发, 用于 DNS 查询, 默认不启动
+           └── ss-tunnel      // 提供端口转发, 可用于 DNS 查询, 默认不启动
    ```
 
  - shadowsocks-libev-spec
@@ -40,7 +40,7 @@ Shadowsocks-libev for OpenWrt
        └── bin/
            ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP
            ├── ss-rules       // 生成代理转发规则的脚本
-           └── ss-tunnel      // 提供 UDP 转发, 用于 DNS 查询
+           └── ss-tunnel      // 提供端口转发, 可用于 DNS 查询
    ```
 
 编译

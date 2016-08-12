@@ -12,7 +12,8 @@ STOP=15
 
 NAME=shadowsocks
 EXTRA_COMMANDS=rules
-CONFIG_FILE=/var/etc/$NAME.json
+GLOBAL_CONFIG_FILE=/var/etc/$NAME.json
+UDP_RELAY_CONFIG_FILE=/var/etc/$NAME-udp.json
 
 uci_get_by_name() {
 	local ret=$(uci get $NAME.$1.$2 2>/dev/null)
@@ -24,8 +25,14 @@ uci_get_by_type() {
 	echo ${ret:=$3}
 }
 
+get_arg_ota() {
+	case "$(uci_get_by_name $1 auth)" in
+		1|on|true|yes|enabled) echo "-A";;
+	esac
+}
+
 gen_config_file() {
-	cat <<-EOF >$CONFIG_FILE
+	cat <<-EOF >$2
 		{
 		    "server": "$(uci_get_by_name $1 server)",
 		    "server_port": $(uci_get_by_name $1 server_port),
@@ -41,8 +48,7 @@ EOF
 gen_lan_hosts_action() {
 	case "$(uci_get_by_name $1 enable)" in
 		1|on|true|yes|enabled)
-			echo "$(uci_get_by_name $1 action),$(uci_get_by_name $1 host)"
-			;;
+			echo "$(uci_get_by_name $1 action),$(uci_get_by_name $1 host)";;
 	esac
 }
 
@@ -75,37 +81,6 @@ start_rules() {
 	return $ret
 }
 
-start_redir() {
-	case "$(uci_get_by_name $GLOBAL_SERVER auth)" in
-		1|on|true|yes|enabled) ARG_OTA="-A";;
-		*) ARG_OTA="";;
-	esac
-	gen_config_file $GLOBAL_SERVER
-	if [ "$ARG_UDP" = "-U" ]; then
-		/usr/bin/ss-redir \
-			-c $CONFIG_FILE $ARG_OTA \
-			-f /var/run/ss-redir-tcp.pid
-		case "$(uci_get_by_name $UDP_RELAY_SERVER auth)" in
-			1|on|true|yes|enabled) ARG_OTA="-A";;
-			*) ARG_OTA="";;
-		esac
-		gen_config_file $UDP_RELAY_SERVER
-	fi
-	/usr/bin/ss-redir \
-		-c $CONFIG_FILE $ARG_OTA $ARG_UDP \
-		-f /var/run/ss-redir.pid
-	return $?
-}
-
-start_tunnel() {
-	/usr/bin/ss-tunnel \
-		-c $CONFIG_FILE $ARG_OTA ${ARG_UDP:="-u"} \
-		-l $(uci_get_by_type port_forward local_port 5300) \
-		-L $(uci_get_by_type port_forward destination 8.8.4.4:53) \
-		-f /var/run/ss-tunnel.pid
-	return $?
-}
-
 rules() {
 	GLOBAL_SERVER=$(uci_get_by_type global global_server)
 	[ "$GLOBAL_SERVER" = "nil" ] && exit 0
@@ -115,10 +90,49 @@ rules() {
 	start_rules
 }
 
+start_redir() {
+	gen_config_file $1 $2
+	/usr/bin/ss-redir -c $2 $3 $(get_arg_ota $1) -f /var/run/ss-redir$4.pid
+}
+
+redir() {
+	case "$ARG_UDP" in
+		-u)
+			start_redir $GLOBAL_SERVER $GLOBAL_CONFIG_FILE -u
+			;;
+		-U)
+			start_redir $GLOBAL_SERVER $GLOBAL_CONFIG_FILE
+			start_redir $UDP_RELAY_SERVER $UDP_RELAY_CONFIG_FILE -U -udp
+			;;
+		*)
+			start_redir $GLOBAL_SERVER $GLOBAL_CONFIG_FILE
+			;;
+	esac
+}
+
+start_tunnel() {
+	/usr/bin/ss-tunnel -c $2 $3 $(get_arg_ota $1) \
+		-l $(uci_get_by_type port_forward local_port 5300) \
+		-L $(uci_get_by_type port_forward destination 8.8.4.4:53) \
+		-f /var/run/ss-tunnel$4.pid
+}
+
+tunnel() {
+	case "$ARG_UDP" in
+		-U)
+			start_tunnel $GLOBAL_SERVER $GLOBAL_CONFIG_FILE
+			start_tunnel $UDP_RELAY_SERVER $UDP_RELAY_CONFIG_FILE -U -udp
+			;;
+		*)
+			start_tunnel $GLOBAL_SERVER $GLOBAL_CONFIG_FILE -u
+			;;
+	esac
+}
+
 start() {
-	rules && start_redir
+	rules && redir
 	case "$(uci_get_by_type port_forward enable)" in
-		1|on|true|yes|enabled) start_tunnel;;
+		1|on|true|yes|enabled) tunnel;;
 	esac
 }
 
@@ -133,6 +147,7 @@ kill_pid() {
 stop() {
 	/usr/bin/ss-rules -f
 	kill_pid /var/run/ss-redir.pid
-	kill_pid /var/run/ss-redir-tcp.pid
+	kill_pid /var/run/ss-redir-udp.pid
 	kill_pid /var/run/ss-tunnel.pid
+	kill_pid /var/run/ss-tunnel-udp.pid
 }
