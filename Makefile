@@ -20,7 +20,7 @@ PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Max Lv <max.c.lv@gmail.com>
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
@@ -32,14 +32,13 @@ include $(INCLUDE_DIR)/package.mk
 define Package/shadowsocks-libev/Default
 	SECTION:=net
 	CATEGORY:=Network
-	TITLE:=Lightweight Secured Socks5 Proxy $(2)
+	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	VARIANT:=$(1)
-	DEPENDS:=$(3)
+	DEPENDS:=$(1)
 endef
 
-Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
-Package/shadowsocks-libev-spec = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip)
+Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,+libopenssl +libpthread)
+Package/shadowsocks-libev-spec = $(call Package/shadowsocks-libev/Default,+libopenssl +libpthread +ipset +ip)
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured socks5 proxy for embedded devices and low end boxes.
