@@ -40,16 +40,12 @@ endef
 
 Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread)
 Package/shadowsocks-libev-spec = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip)
-Package/shadowsocks-libev-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread)
-Package/shadowsocks-libev-spec-polarssl = $(call Package/shadowsocks-libev/Default,polarssl,(PolarSSL),+libpolarssl +libpthread +ipset +ip)
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured socks5 proxy for embedded devices and low end boxes.
 endef
 
 Package/shadowsocks-libev-spec/description = $(Package/shadowsocks-libev/description)
-Package/shadowsocks-libev-polarssl/description = $(Package/shadowsocks-libev/description)
-Package/shadowsocks-libev-spec-polarssl/description = $(Package/shadowsocks-libev/description)
 
 define Package/shadowsocks-libev/conffiles
 /etc/shadowsocks.json
@@ -58,9 +54,6 @@ endef
 define Package/shadowsocks-libev-spec/conffiles
 /etc/config/shadowsocks
 endef
-
-Package/shadowsocks-libev-polarssl/conffiles = $(Package/shadowsocks-libev/conffiles)
-Package/shadowsocks-libev-spec-polarssl/conffiles = $(Package/shadowsocks-libev-spec/conffiles)
 
 define Package/shadowsocks-libev-spec/postinst
 #!/bin/sh
@@ -77,13 +70,7 @@ fi
 exit 0
 endef
 
-Package/shadowsocks-libev-spec-polarssl/postinst = $(Package/shadowsocks-libev-spec/postinst)
-
 CONFIGURE_ARGS += --disable-ssp --disable-documentation
-
-ifeq ($(BUILD_VARIANT),polarssl)
-	CONFIGURE_ARGS += --with-crypto-library=polarssl
-endif
 
 define Package/shadowsocks-libev/install
 	$(INSTALL_DIR) $(1)/usr/bin
@@ -103,10 +90,5 @@ define Package/shadowsocks-libev-spec/install
 	$(INSTALL_BIN) ./files/shadowsocks.spec $(1)/etc/init.d/shadowsocks
 endef
 
-Package/shadowsocks-libev-polarssl/install = $(Package/shadowsocks-libev/install)
-Package/shadowsocks-libev-spec-polarssl/install = $(Package/shadowsocks-libev-spec/install)
-
 $(eval $(call BuildPackage,shadowsocks-libev))
 $(eval $(call BuildPackage,shadowsocks-libev-spec))
-$(eval $(call BuildPackage,shadowsocks-libev-polarssl))
-$(eval $(call BuildPackage,shadowsocks-libev-spec-polarssl))
