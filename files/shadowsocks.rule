@@ -122,13 +122,14 @@ CAT
 }
 
 include_ac_rules() {
+	local protocol=$([ "$1" = "mangle" ] && echo udp || echo tcp)
 	iptables-restore -n <<-EOF
 	*$1
 	:SS_SPEC_LAN_DG - [0:0]
 	:SS_SPEC_LAN_AC - [0:0]
 	:SS_SPEC_WAN_AC - [0:0]
 	:SS_SPEC_WAN_FW - [0:0]
-	-A SS_SPEC_LAN_DG $EXT_ARGS -j SS_SPEC_LAN_AC
+	-A SS_SPEC_LAN_DG -p $protocol $EXT_ARGS -j SS_SPEC_LAN_AC
 	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_bp src -j RETURN
 	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_fw src -j SS_SPEC_WAN_FW
 	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_no src -j SS_SPEC_WAN_AC
@@ -142,13 +143,12 @@ EOF
 }
 
 gen_prerouting_rules() {
-	local protocol=$([ "$1" = "mangle" ] && echo udp || echo tcp)
 	for ifname in $IFNAMES; do
 		local empty=no
-		iptables -t $1 -I PREROUTING 1 -p $protocol -i $ifname -j SS_SPEC_LAN_DG
+		iptables -t $1 -I PREROUTING 1 -i $ifname -j SS_SPEC_LAN_DG
 	done
 	if [ -z "$empty" ]; then
-		iptables -t $1 -I PREROUTING 1 -p $protocol -j SS_SPEC_LAN_DG
+		iptables -t $1 -I PREROUTING 1 -j SS_SPEC_LAN_DG
 	fi
 }
 
