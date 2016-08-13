@@ -45,10 +45,10 @@ gen_config_file() {
 EOF
 }
 
-gen_lan_hosts_action() {
+gen_lan_hosts() {
 	case "$(uci_get_by_name $1 enable)" in
 		1|on|true|yes|enabled)
-			echo "$(uci_get_by_name $1 action),$(uci_get_by_name $1 host)";;
+			echo "$(uci_get_by_name $1 type),$(uci_get_by_name $1 host)";;
 	esac
 }
 
@@ -72,8 +72,8 @@ start_rules() {
 		-b "$(uci_get_by_type access_control wan_bp_ips)" \
 		-w "$(uci_get_by_type access_control wan_fw_ips)" \
 		-I "$(uci_get_by_type access_control lan_ifaces br-lan)" \
-		-d "$(uci_get_by_type access_control lan_default_target)" \
-		-a "$(echo $(config_foreach gen_lan_hosts_action lan_hosts_action))" \
+		-d "$(uci_get_by_type access_control lan_target)" \
+		-a "$(echo $(config_foreach gen_lan_hosts lan_hosts))" \
 		-e "$(uci_get_by_type access_control ipt_ext)" \
 		-o $ARG_UDP
 		local ret=$?
