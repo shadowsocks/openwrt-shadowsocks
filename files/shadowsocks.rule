@@ -20,13 +20,13 @@ usage() {
 		    -l <local_port>         port number of shadowsocks local server
 		    -S <server_ip>          ip address of shadowsocks remote UDP server
 		    -L <local_port>         port number of shadowsocks local UDP server
-		    -i <ip_list_file>       a file content is bypassed ip list
+		    -i <ip_list_file>       a file whose content is bypassed ip list
 		    -b <wan_ips>            wan ip of will be bypassed
 		    -w <wan_ips>            wan ip of will be forwarded
 		    -I <interface>          proxy only for the given interface
 		    -d <target>             the default target of lan access control
-		    -a <hosts_action>       lan ip of access control, need a prefix to
-		                            define access control mode
+		    -a <lan_hosts>          lan ip of access control, need a prefix to
+		                            define proxy type
 		    -e <extra_options>      extra options for iptables
 		    -o                      apply the rules to the OUTPUT chain
 		    -u                      enable udprelay mode, TPROXY is required
@@ -47,42 +47,40 @@ flush_r() {
 	iptables-save -c | grep -v "$TAG" | iptables-restore -c
 	ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
 	ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
-	ipset -X ss_spec_lan_no 2>/dev/null
-	ipset -X ss_spec_lan_bp 2>/dev/null
-	ipset -X ss_spec_lan_fw 2>/dev/null
-	ipset -X ss_spec_wan_bp 2>/dev/null
-	ipset -X ss_spec_wan_fw 2>/dev/null
+	for setname in $(ipset -n list | grep -i "$TAG"); do
+		ipset destroy $setname 2>/dev/null
+	done
 	[ -n "$FWI" ] && echo '#!/bin/sh' >$FWI
 	return 0
 }
 
 ipset_r() {
-	ipset -! -R <<-EOF || return 1
-		create ss_spec_lan_no hash:net hashsize 64
-		create ss_spec_lan_bp hash:net hashsize 64
-		create ss_spec_lan_fw hash:net hashsize 64
-		create ss_spec_wan_sp hash:net hashsize 64
-		create ss_spec_wan_bp hash:net hashsize 64
-		create ss_spec_wan_fw hash:net hashsize 64
-		$(gen_special_purpose_ip | sed -e "s/^/add ss_spec_wan_sp /")
-		$(sed -e "s/^/add ss_spec_wan_bp /" ${IGNORED:=/dev/null} 2>/dev/null)
-		$(for ip in $WAN_BP_IP; do echo "add ss_spec_wan_bp $ip"; done)
-		$(for ip in $WAN_FW_IP; do echo "add ss_spec_wan_fw $ip"; done)
+	ipset -! restore <<-EOF || return 1
+		create ss_spec_src_ac hash:net hashsize 64
+		create ss_spec_src_bp hash:net hashsize 64
+		create ss_spec_src_fw hash:net hashsize 64
+		create ss_spec_dst_sp hash:net hashsize 64
+		create ss_spec_dst_bp hash:net hashsize 64
+		create ss_spec_dst_fw hash:net hashsize 64
+		$(gen_special_purpose_ip | sed -e "s/^/add ss_spec_dst_sp /")
+		$(sed -e "s/^/add ss_spec_dst_bp /" ${IGNORED:=/dev/null} 2>/dev/null)
+		$(for ip in $WAN_BP_IP; do echo "add ss_spec_dst_bp $ip"; done)
+		$(for ip in $WAN_FW_IP; do echo "add ss_spec_dst_fw $ip"; done)
 EOF
 	return 0
 }
 
 ac_rule() {
-	for action in $LAN_HOSTS_ACTION; do
-		case "${action:0:1}" in
+	for host in $LAN_HOSTS; do
+		case "${host:0:1}" in
 			n|N)
-				ipset add ss_spec_lan_no ${action:2}
+				ipset add ss_spec_src_ac ${host:2}
 				;;
 			b|B)
-				ipset add ss_spec_lan_bp ${action:2}
+				ipset add ss_spec_src_bp ${host:2}
 				;;
 			g|G)
-				ipset add ss_spec_lan_fw ${action:2}
+				ipset add ss_spec_src_fw ${host:2}
 				;;
 		esac
 	done
@@ -130,14 +128,14 @@ include_ac_rules() {
 	:SS_SPEC_WAN_AC - [0:0]
 	:SS_SPEC_WAN_FW - [0:0]
 	-A SS_SPEC_LAN_DG -p $protocol $EXT_ARGS -j SS_SPEC_LAN_AC
-	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_bp src -j RETURN
-	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_fw src -j SS_SPEC_WAN_FW
-	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_lan_no src -j SS_SPEC_WAN_AC
-	-A SS_SPEC_LAN_AC -j ${LAN_DEFAULT_TARGET:=SS_SPEC_WAN_AC}
-	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_fw dst -j SS_SPEC_WAN_FW
-	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_bp dst -j RETURN
+	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_src_bp src -j RETURN
+	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_src_fw src -j SS_SPEC_WAN_FW
+	-A SS_SPEC_LAN_AC -m set --match-set ss_spec_src_ac src -j SS_SPEC_WAN_AC
+	-A SS_SPEC_LAN_AC -j ${LAN_TARGET:=SS_SPEC_WAN_AC}
+	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_dst_fw dst -j SS_SPEC_WAN_FW
+	-A SS_SPEC_WAN_AC -m set --match-set ss_spec_dst_bp dst -j RETURN
 	-A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
-	-A SS_SPEC_WAN_FW -m set --match-set ss_spec_wan_sp dst -j RETURN
+	-A SS_SPEC_WAN_FW -m set --match-set ss_spec_dst_sp dst -j RETURN
 	COMMIT
 EOF
 }
@@ -205,10 +203,10 @@ while getopts ":s:l:S:L:i:b:w:I:d:a:e:ouUfh" arg; do
 			IFNAMES=$OPTARG
 			;;
 		d)
-			LAN_DEFAULT_TARGET=$OPTARG
+			LAN_TARGET=$OPTARG
 			;;
 		a)
-			LAN_HOSTS_ACTION=$OPTARG
+			LAN_HOSTS=$OPTARG
 			;;
 		e)
 			EXT_ARGS=$OPTARG
