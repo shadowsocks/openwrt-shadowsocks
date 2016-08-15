@@ -5,42 +5,32 @@ Shadowsocks-libev for OpenWrt
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: [2.4.8-2][2]  
+ 当前版本: [2.4.8-3][2]  
 
 特性
 ---
 
+软件包只包含 [shadowsocks-libev][1] 的可执行文件, 可与 [luci-app-shadowsocks][3] 搭配使用  
 可编译两种版本  
 
  - shadowsocks-libev
 
    ```
-   原版/
-   ├── etc/
-   │   ├── init.d/
-   │   │   └── shadowsocks   // init 脚本
-   │   └── shadowsocks.json  // 配置文件
+   客户端/
    └── usr/
        └── bin/
            ├── ss-local       // 提供 SOCKS 代理
-           ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP, 默认不启动
-           └── ss-tunnel      // 提供端口转发, 可用于 DNS 查询, 默认不启动
+           ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP
+           └── ss-tunnel      // 提供端口转发, 可用于 DNS 查询
    ```
 
- - shadowsocks-libev-spec
+ - shadowsocks-libev-server
 
    ```
-   优化版/
-   ├── etc/
-   │   ├── config/
-   │   │   └── shadowsocks   // UCI 配置文件
-   │   └── init.d/
-   │       └── shadowsocks   // init 脚本
+   服务端/
    └── usr/
        └── bin/
-           ├── ss-redir       // 提供透明代理, 从 v2.2.0 开始支持 UDP
-           ├── ss-rules       // 生成代理转发规则的脚本
-           └── ss-tunnel      // 提供端口转发, 可用于 DNS 查询
+           └── ss-server      // 服务端可执行文件
    ```
 
 编译
@@ -63,10 +53,7 @@ Shadowsocks-libev for OpenWrt
 配置
 ---
 
- - shadowsocks-libev
-
-   配置文件路径: `/etc/shadowsocks.json`  
-   文件内容为 JSON 格式, 支持的键:  
+   软件包本身并不包含配置文件, 配置文件内容为 JSON 格式, 支持的键:  
 
    键名           | 数据类型   | 说明
    ---------------|------------|-----------------------------------------------
@@ -81,21 +68,11 @@ Shadowsocks-libev for OpenWrt
    auth           | 布尔值     | 是否启用[一次验证][A]
    nofile         | 数值       | 设置 Linux ulimit
 
- - shadowsocks-libev-spec
-
-   配置文件路径: `/etc/config/shadowsocks`  
-   此文件为 UCI 配置文件, 配置方式可参考 [Wiki][U] 和 [OpenWrt Wiki][O]  
-   从 `v1.5.2` 开始, 已支持使用 [LuCI][L] 界面进行配置  
-   注: 有关 `ss-rules` 的介绍请参考[这里][I]
-
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
   [2]: https://sourceforge.net/projects/openwrt-dist/files/shadowsocks-libev/ "预编译 IPK 下载"
+  [3]: https://github.com/shadowsocks/luci-app-shadowsocks
   [A]: https://shadowsocks.org/en/spec/one-time-auth.html
-  [E]: https://github.com/shadowsocks/openwrt-shadowsocks/wiki/Encrypt-method
+  [E]: https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Encrypt-method
   [F]: https://github.com/shadowsocks/shadowsocks/wiki/TCP-Fast-Open
-  [I]: https://github.com/shadowsocks/openwrt-shadowsocks/wiki/Instruction-of-ss-rules
-  [L]: https://github.com/aa65535/openwrt-dist-luci "luci-app-shadowsocks-spec"
-  [O]: https://wiki.openwrt.org/doc/uci
   [S]: https://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
-  [U]: https://github.com/shadowsocks/openwrt-shadowsocks/wiki/Use-UCI-system
