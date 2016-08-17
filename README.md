@@ -1,11 +1,12 @@
 Shadowsocks-libev for OpenWrt
 ===
 
+[![Download](https://api.bintray.com/packages/aa65535/opkg/shadowsocks-libev/images/download.svg) ](https://bintray.com/aa65535/opkg/shadowsocks-libev/_latestVersion)  
+
 简介
 ---
 
  本项目是 [shadowsocks-libev][1] 在 OpenWrt 上的移植  
- 当前版本: [2.4.8-3][2]  
 
 特性
 ---
