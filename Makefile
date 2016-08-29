@@ -54,7 +54,7 @@ Package/shadowsocks-libev-server-mbedtls/description = $(Package/shadowsocks-lib
 Package/shadowsocks-libev-polarssl/description = $(Package/shadowsocks-libev/description)
 Package/shadowsocks-libev-server-polarssl/description = $(Package/shadowsocks-libev/description)
 
-CONFIGURE_ARGS += --disable-ssp --disable-documentation
+CONFIGURE_ARGS += --disable-ssp --disable-documentation --disable-assert
 
 ifeq ($(BUILD_VARIANT),mbedtls)
 	CONFIGURE_ARGS += --with-crypto-library=mbedtls
