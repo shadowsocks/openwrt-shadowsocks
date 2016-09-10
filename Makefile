@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
-PKG_VERSION:=2.5.0
+PKG_VERSION:=2.5.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/shadowsocks/openwrt-shadowsocks/releases/download/v$(PKG_VERSION)
-PKG_MD5SUM:=55884178db59fbd4fccdf9d4908d39a3
+PKG_MD5SUM:=1fd95711906aef8ad35c7352d6f1af2e
 
 PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
