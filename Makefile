@@ -56,6 +56,10 @@ Package/shadowsocks-libev-server-polarssl/description = $(Package/shadowsocks-li
 
 CONFIGURE_ARGS += --disable-ssp --disable-documentation --disable-assert
 
+# Use Link time optimization
+TARGET_CFLAGS += -flto
+TARGET_LDFLAGS += -Wl,-flto
+
 ifeq ($(BUILD_VARIANT),mbedtls)
 	CONFIGURE_ARGS += --with-crypto-library=mbedtls
 endif
