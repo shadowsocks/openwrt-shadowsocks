@@ -44,8 +44,8 @@ Shadowsocks-libev for OpenWrt
    tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
    cd OpenWrt-SDK-ar71xx-*
    # 安装 feeds
-   ./scripts/feeds update -a
-   ./scripts/feeds install -a
+   ./scripts/feeds update packages
+   ./scripts/feeds install libpcre
    # 获取 Makefile
    git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
    # 选择要编译的包 Network -> shadowsocks-libev
