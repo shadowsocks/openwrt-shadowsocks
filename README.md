@@ -46,7 +46,11 @@ Shadowsocks-libev for OpenWrt
    # 安装 feeds
    ./scripts/feeds update packages
    ./scripts/feeds install libpcre
-   # 获取 Makefile
+   # 如果是 musl 函数库的 SDK (LEDE), 需要额外添加的 feeds
+   ./scripts/feeds update base
+   ./scripts/feeds install libc zlib libopenssl libpolarssl libmbedtls
+   rm -rf package/feeds/base/mbedtls/patches
+   # 获取 shadowsocks-libev Makefile
    git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
    # 选择要编译的包 Network -> shadowsocks-libev
    make menuconfig
