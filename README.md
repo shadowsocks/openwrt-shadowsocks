@@ -72,9 +72,17 @@ Shadowsocks-libev for OpenWrt
    password       | 字符串     | 服务端设置的密码
    method         | 字符串     | 加密方式, [详情参考][E]
    timeout        | 数值       | 超时时间（秒）, 默认 60
-   fast_open      | 布尔值     | 是否启用 [TCP-Fast-Open][F], 只适用于 ss-local
+   fast_open      | 布尔值     | 是否启用 [TCP-Fast-Open][F], 只适用于 ss-local和ss-server
    auth           | 布尔值     | 是否启用[一次验证][A]
    nofile         | 数值       | 设置 Linux ulimit
+   obfs				 |字符串		  |混淆模式，只能是http或者tls
+   obfs-host		 |字符串		  |设置混淆所用的域名
+   nameserver		 | 字符串| 指定DNS服务器
+   mode|字符串|指定工作模式，可以是仅tcp或者udp亦或都支持
+   mptcp|布尔值|是否启用 [mptcp][P]
+   mtu|数值|指定[MTU][M]值
+   ipv6_first|布尔值|ipv6 优先
+   
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
@@ -85,3 +93,8 @@ Shadowsocks-libev for OpenWrt
   [E]: https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Encrypt-method
   [F]: https://github.com/shadowsocks/shadowsocks/wiki/TCP-Fast-Open
   [S]: https://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
+  [M]: https://en.wikipedia.org/wiki/Maximum_transmission_unit
+  [P]: https://www.multipath-tcp.org
+
+
+
