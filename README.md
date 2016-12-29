@@ -63,18 +63,22 @@ Shadowsocks-libev for OpenWrt
 
    软件包本身并不包含配置文件, 配置文件内容为 JSON 格式, 支持的键:  
 
-   键名           | 数据类型   | 说明
-   ---------------|------------|-----------------------------------------------
-   server         | 字符串     | 服务器地址, 可以是 IP 或者域名
-   server_port    | 数值       | 服务器端口号, 小于 65535
-   local_address  | 字符串     | 本地绑定的 IP 地址, 默认 127.0.0.1
-   local_port     | 数值       | 本地绑定的端口号, 小于 65535
-   password       | 字符串     | 服务端设置的密码
-   method         | 字符串     | 加密方式, [详情参考][E]
-   timeout        | 数值       | 超时时间（秒）, 默认 60
-   fast_open      | 布尔值     | 是否启用 [TCP-Fast-Open][F], 只适用于 ss-local
-   auth           | 布尔值     | 是否启用[一次验证][A]
-   nofile         | 数值       | 设置 Linux ulimit
+   键名           | 数据类型 | 说明
+   ---------------|----------|-----------------------------------------------
+   server         | 字符串   | 服务器地址, 可以是 IP 或者域名
+   server_port    | 整数值   | 服务器端口号
+   local_address  | 字符串   | 本地绑定的 IP 地址, 默认 `127.0.0.1`
+   local_port     | 整数值   | 本地绑定的端口号
+   password       | 字符串   | 服务端设置的密码
+   method         | 字符串   | 加密方式, [详情参考][E]
+   timeout        | 整数值   | 超时时间（秒）, 默认 60
+   obfs           | 枚举值   | 混淆模式, 可用值: [`http`, `tls`]
+   obfs_host      | 字符串   | 混淆所用域名, 默认 `cloudfront.net`
+   fast_open      | 布尔值   | 是否启用 [TCP Fast Open][F], 只适用于 `ss-local`, `ss-server`
+   auth           | 布尔值   | 是否启用[一次验证][A]
+   nofile         | 整数值   | 设置 Linux ulimit
+   mode           | 枚举值   | 转发模式, 可用值: [`tcp_only`, `udp_only`, `tcp_and_udp`]
+   mptcp          | 布尔值   | 是否启用 [Multipath TCP][M]
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
@@ -85,3 +89,4 @@ Shadowsocks-libev for OpenWrt
   [E]: https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Encrypt-method
   [F]: https://github.com/shadowsocks/shadowsocks/wiki/TCP-Fast-Open
   [S]: https://wiki.openwrt.org/doc/howto/obtain.firmware.sdk
+  [M]: https://www.multipath-tcp.org/
