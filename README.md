@@ -72,7 +72,8 @@ Shadowsocks-libev for OpenWrt
    password       | 字符串   | 服务端设置的密码
    method         | 字符串   | 加密方式, [详情参考][E]
    timeout        | 整数值   | 超时时间（秒）, 默认 60
-   plugin         | 字符串   | 插件及其参数, eg: `obfs-local --obfs http --obfs-host www.baidu.com`
+   plugin         | 字符串   | 插件名称, eg: `obfs-local`
+   plugin_opts    | 字符串   | 插件参数, eg: `obfs=http;obfs-host=www.baidu.com`
    fast_open      | 布尔值   | 是否启用 [TCP Fast Open][F], 只适用于 `ss-local`, `ss-server`
    auth           | 布尔值   | 是否启用[一次验证][A]
    nofile         | 整数值   | 设置 Linux ulimit
