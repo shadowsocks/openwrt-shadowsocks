@@ -52,6 +52,10 @@ Package/shadowsocks-libev-server-mbedtls/description = $(Package/shadowsocks-lib
 
 CONFIGURE_ARGS += --disable-ssp --disable-documentation --disable-assert
 
+# Strip unused functions and data
+TARGET_CFLAGS += -ffunction-sections -fdata-sections
+TARGET_LDFLAGS += -Wl,--gc-sections
+
 ifeq ($(BUILD_VARIANT),mbedtls)
 	CONFIGURE_ARGS += --with-crypto-library=mbedtls
 endif
