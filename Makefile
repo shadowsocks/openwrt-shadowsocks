@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
-PKG_VERSION:=2.6.3
+PKG_VERSION:=3.0.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/shadowsocks/shadowsocks-libev.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
-PKG_SOURCE_VERSION:=38a3084b1f29ca0ccb5f929ae149fb64a0477fa5
+PKG_SOURCE_VERSION:=833594e3c637c4cad629ff95b3d3d37c31f2927b
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.xz
 
 PKG_LICENSE:=GPLv3
@@ -33,46 +33,31 @@ include $(INCLUDE_DIR)/package.mk
 define Package/shadowsocks-libev/Default
 	SECTION:=net
 	CATEGORY:=Network
-	TITLE:=Lightweight Secured Socks5 Proxy $(2)
+	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	VARIANT:=$(1)
-	DEPENDS:=$(3) +libev +libpcre +libpthread +libsodium
+	DEPENDS:=+libev +libpcre +libpthread +libsodium +libmbedtls
 endef
 
-Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,openssl,(OpenSSL),+libopenssl +zlib)
-Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
-Package/shadowsocks-libev-mbedtls = $(call Package/shadowsocks-libev/Default,mbedtls,(mbedTLS),+libmbedtls)
-Package/shadowsocks-libev-server-mbedtls = $(Package/shadowsocks-libev-mbedtls)
+Package/shadowsocks-libev = $(Package/shadowsocks-libev/Default)
+Package/shadowsocks-libev-server = $(Package/shadowsocks-libev/Default)
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured socks5 proxy for embedded devices and low end boxes.
 endef
 
 Package/shadowsocks-libev-server/description = $(Package/shadowsocks-libev/description)
-Package/shadowsocks-libev-mbedtls/description = $(Package/shadowsocks-libev/description)
-Package/shadowsocks-libev-server-mbedtls/description = $(Package/shadowsocks-libev/description)
 
-CONFIGURE_ARGS += --disable-ssp --disable-documentation --disable-assert
-
-ifeq ($(BUILD_VARIANT),mbedtls)
-	CONFIGURE_ARGS += --with-crypto-library=mbedtls
-endif
+CONFIGURE_ARGS += --disable-ssp --disable-documentation --disable-assert --with-crypto-library=mbedtls
 
 define Package/shadowsocks-libev/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-{local,redir,tunnel} $(1)/usr/bin
 endef
 
-Package/shadowsocks-libev-mbedtls/install = $(Package/shadowsocks-libev/install)
-
 define Package/shadowsocks-libev-server/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-server $(1)/usr/bin
 endef
 
-Package/shadowsocks-libev-server-mbedtls/install = $(Package/shadowsocks-libev-server/install)
-
 $(eval $(call BuildPackage,shadowsocks-libev))
 $(eval $(call BuildPackage,shadowsocks-libev-server))
-$(eval $(call BuildPackage,shadowsocks-libev-mbedtls))
-$(eval $(call BuildPackage,shadowsocks-libev-server-mbedtls))

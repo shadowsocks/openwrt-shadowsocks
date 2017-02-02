@@ -1,11 +1,11 @@
-From 893f38557705769c11439b29ba49dfce325622ed Mon Sep 17 00:00:00 2001
+From d5dd0f3c9934f11d5e8a77a4d34ab59a0a9f7a13 Mon Sep 17 00:00:00 2001
 From: Jian Chang <aa65535@live.com>
-Date: Wed, 25 Jan 2017 17:30:43 +0800
+Date: Thu, 2 Feb 2017 20:23:46 +0800
 Subject: [PATCH] embed libudns
 
 ---
  Makefile.am             |    2 +-
- configure.ac            |   12 +-
+ configure.ac            |    3 +-
  libudns/Makefile.am     |    8 +
  libudns/dnsget.1        |  195 +++++++
  libudns/dnsget.c        |  759 ++++++++++++++++++++++++++
@@ -33,7 +33,7 @@ Subject: [PATCH] embed libudns
  libudns/udns_rr_srv.c   |  155 ++++++
  libudns/udns_rr_txt.c   |   98 ++++
  src/Makefile.am         |   11 +-
- 29 files changed, 7604 insertions(+), 17 deletions(-)
+ 29 files changed, 7604 insertions(+), 8 deletions(-)
  create mode 100644 libudns/Makefile.am
  create mode 100644 libudns/dnsget.1
  create mode 100644 libudns/dnsget.c
@@ -68,41 +68,23 @@ index 4a25c0f..06457eb 100644
 @@ -1,4 +1,4 @@
 -SUBDIRS = libcork libipset src
 +SUBDIRS = libcork libipset libudns src
-
+ 
  if ENABLE_DOCUMENTATION
  SUBDIRS += doc
-@@ -8,8 +8,3 @@ ACLOCAL_AMFLAGS = -I m4
-
- pkgconfiglibdir = $(libdir)/pkgconfig
- pkgconfiglib_DATA = shadowsocks-libev.pc
--
--EXTRA_DIST = acl Changes completions debian docker rpm README.md
--EXTRA_DIST += libcork/include libipset/include
--EXTRA_DIST += libipset/src/libipset/map/inspection-template.c.in
--EXTRA_DIST += libipset/src/libipset/set/inspection-template.c.in
 diff --git a/configure.ac b/configure.ac
-index 0669f97..d27a830 100755
+index b91c297..67f641a 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -255,17 +255,6 @@ dnl This is an option defined in the origin configure script
+@@ -277,8 +277,6 @@ dnl Add define for libudns to enable IPv6 support
+ dnl This is an option defined in the origin configure script
  AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
  
- # Checks for libraries.
--PKG_CHECK_MODULES([LIBUDNS], [libudns], HAVE_LIBUDNS=yes; AC_DEFINE(HAVE_LIBUDNS, 1),
--[AC_LIB_HAVE_LINKFLAGS(udns,, [#include <udns.h>], [dns_init(0, 0);])
-- if test x$ac_cv_libudns = xyes; then
--  LIBS="$LIBUDNS $LIBS"
-- else
--  AC_MSG_ERROR([[***
--*** Couldn't find libudns. Try installing libudns-dev or udns-devel.
--***]])
-- fi
--])
--
- PKG_CHECK_MODULES([LIBEV], [libev], HAVE_LIBEV=yes; AC_DEFINE(HAVE_LIBEV, 1),
- [AC_LIB_HAVE_LINKFLAGS(ev,, [#include <ev.h>], [ev_run(0,0);])
-  if test x$ac_cv_libev = xyes; then
-@@ -285,6 +274,7 @@ AC_CONFIG_FILES([shadowsocks-libev.pc
+-AC_CHECK_HEADERS([udns.h], [], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
+-AC_CHECK_LIB([udns], [dns_dnlen], [LIBS="-ludns $LIBS"], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
+ AC_CHECK_HEADERS([ev.h], [], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
+ AC_CHECK_LIB([ev], [ev_loop_destroy], [LIBS="-lev $LIBS"], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
+ 
+@@ -290,6 +288,7 @@ AC_CONFIG_FILES([shadowsocks-libev.pc
                   Makefile
                   libcork/Makefile
                   libipset/Makefile
@@ -7863,7 +7845,7 @@ index 0000000..97f1dfb
 +    dns_resolve_p(ctx, name, qcls, DNS_T_TXT, flags, dns_parse_txt);
 +}
 diff --git a/src/Makefile.am b/src/Makefile.am
-index f890d97..c46c8d5 100644
+index 5f44848..ba03950 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -4,6 +4,7 @@ AM_CFLAGS = -g -O2 -Wall -Werror -Wno-deprecated-declarations -fno-strict-aliasi
@@ -7874,7 +7856,7 @@ index f890d97..c46c8d5 100644
  AM_CFLAGS += $(LIBPCRE_CFLAGS)
  
  SS_COMMON_LIBS = $(top_builddir)/libipset/libipset.la \
-@@ -64,10 +65,10 @@ ss_local_LDADD = $(SS_COMMON_LIBS)
+@@ -68,10 +69,10 @@ ss_local_LDADD = $(SS_COMMON_LIBS)
  ss_tunnel_LDADD = $(SS_COMMON_LIBS)
  ss_server_LDADD = $(SS_COMMON_LIBS)
  ss_manager_LDADD = $(SS_COMMON_LIBS)
@@ -7889,7 +7871,7 @@ index f890d97..c46c8d5 100644
  
  ss_local_CFLAGS = $(AM_CFLAGS) -DMODULE_LOCAL
  ss_tunnel_CFLAGS = $(AM_CFLAGS) -DMODULE_TUNNEL
-@@ -90,7 +91,7 @@ ss_redir_SOURCES = utils.c \
+@@ -94,7 +95,7 @@ ss_redir_SOURCES = utils.c \
  
  ss_redir_CFLAGS = $(AM_CFLAGS) -DMODULE_REDIR
  ss_redir_LDADD = $(SS_COMMON_LIBS)
