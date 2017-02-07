@@ -1,11 +1,11 @@
-From d5dd0f3c9934f11d5e8a77a4d34ab59a0a9f7a13 Mon Sep 17 00:00:00 2001
+From 13df793bce0a09769676455cc923410c1af04cc6 Mon Sep 17 00:00:00 2001
 From: Jian Chang <aa65535@live.com>
-Date: Thu, 2 Feb 2017 20:23:46 +0800
+Date: Tue, 7 Feb 2017 20:53:44 +0800
 Subject: [PATCH] embed libudns
 
 ---
- Makefile.am             |    2 +-
- configure.ac            |    3 +-
+ Makefile.am             |    4 +-
+ configure.ac            |    1 +
  libudns/Makefile.am     |    8 +
  libudns/dnsget.1        |  195 +++++++
  libudns/dnsget.c        |  759 ++++++++++++++++++++++++++
@@ -33,7 +33,7 @@ Subject: [PATCH] embed libudns
  libudns/udns_rr_srv.c   |  155 ++++++
  libudns/udns_rr_txt.c   |   98 ++++
  src/Makefile.am         |   11 +-
- 29 files changed, 7604 insertions(+), 8 deletions(-)
+ 29 files changed, 7605 insertions(+), 7 deletions(-)
  create mode 100644 libudns/Makefile.am
  create mode 100644 libudns/dnsget.1
  create mode 100644 libudns/dnsget.c
@@ -62,36 +62,31 @@ Subject: [PATCH] embed libudns
  create mode 100644 libudns/udns_rr_txt.c
 
 diff --git a/Makefile.am b/Makefile.am
-index 4a25c0f..06457eb 100644
+index 06af285..8d6070e 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -1,4 +1,4 @@
+@@ -1,7 +1,7 @@
+ if USE_SYSTEM_SHARED_LIB
+-SUBDIRS = src
++SUBDIRS = libudns src
+ else
 -SUBDIRS = libcork libipset src
 +SUBDIRS = libcork libipset libudns src
+ endif
  
  if ENABLE_DOCUMENTATION
- SUBDIRS += doc
 diff --git a/configure.ac b/configure.ac
-index b91c297..67f641a 100755
+index 008c2d2..ce5df55 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -277,8 +277,6 @@ dnl Add define for libudns to enable IPv6 support
- dnl This is an option defined in the origin configure script
- AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
+@@ -284,6 +284,7 @@ AC_CHECK_LIB([ev], [ev_loop_destroy], [LIBS="-lev $LIBS"], [AC_MSG_ERROR([Couldn
  
--AC_CHECK_HEADERS([udns.h], [], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
--AC_CHECK_LIB([udns], [dns_dnlen], [LIBS="-ludns $LIBS"], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
- AC_CHECK_HEADERS([ev.h], [], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
- AC_CHECK_LIB([ev], [ev_loop_destroy], [LIBS="-lev $LIBS"], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
- 
-@@ -290,6 +288,7 @@ AC_CONFIG_FILES([shadowsocks-libev.pc
+ AC_CONFIG_FILES([shadowsocks-libev.pc
                   Makefile
-                  libcork/Makefile
-                  libipset/Makefile
 +                 libudns/Makefile
                   src/Makefile])
  
- AC_OUTPUT
+ AM_COND_IF([USE_SYSTEM_SHARED_LIB],
 diff --git a/libudns/Makefile.am b/libudns/Makefile.am
 new file mode 100644
 index 0000000..4812e22
@@ -7845,18 +7840,18 @@ index 0000000..97f1dfb
 +    dns_resolve_p(ctx, name, qcls, DNS_T_TXT, flags, dns_parse_txt);
 +}
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 5f44848..ba03950 100644
+index 955fb57..45aa0aa 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -4,6 +4,7 @@ AM_CFLAGS = -g -O2 -Wall -Werror -Wno-deprecated-declarations -fno-strict-aliasi
- AM_CFLAGS += $(PTHREAD_CFLAGS)
+@@ -6,6 +6,7 @@ if !USE_SYSTEM_SHARED_LIB
  AM_CFLAGS += -I$(top_srcdir)/libipset/include
  AM_CFLAGS += -I$(top_srcdir)/libcork/include
+ endif
 +AM_CFLAGS += -I$(top_srcdir)/libudns
  AM_CFLAGS += $(LIBPCRE_CFLAGS)
  
- SS_COMMON_LIBS = $(top_builddir)/libipset/libipset.la \
-@@ -68,10 +69,10 @@ ss_local_LDADD = $(SS_COMMON_LIBS)
+ SS_COMMON_LIBS = $(INET_NTOP_LIB) $(LIBPCRE_LIBS)
+@@ -75,10 +76,10 @@ ss_local_LDADD = $(SS_COMMON_LIBS)
  ss_tunnel_LDADD = $(SS_COMMON_LIBS)
  ss_server_LDADD = $(SS_COMMON_LIBS)
  ss_manager_LDADD = $(SS_COMMON_LIBS)
@@ -7871,7 +7866,7 @@ index 5f44848..ba03950 100644
  
  ss_local_CFLAGS = $(AM_CFLAGS) -DMODULE_LOCAL
  ss_tunnel_CFLAGS = $(AM_CFLAGS) -DMODULE_TUNNEL
-@@ -94,7 +95,7 @@ ss_redir_SOURCES = utils.c \
+@@ -101,7 +102,7 @@ ss_redir_SOURCES = utils.c \
  
  ss_redir_CFLAGS = $(AM_CFLAGS) -DMODULE_REDIR
  ss_redir_LDADD = $(SS_COMMON_LIBS)
