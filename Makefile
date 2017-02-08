@@ -14,7 +14,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/shadowsocks/shadowsocks-libev.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
-PKG_SOURCE_VERSION:=fdb1f190f8bad4438cc42b673eb98a6f14c1e1bc
+PKG_SOURCE_VERSION:=f4b1641636942bc44c96160afad9f023fb6dbf0e
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.xz
 
 PKG_LICENSE:=GPLv3
@@ -35,7 +35,7 @@ define Package/shadowsocks-libev/Default
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	DEPENDS:=+libev +libpcre +libpthread +libsodium +libmbedtls
+	DEPENDS:=+libev +libpcre +libpthread +libsodium +libmbedtls + udns-libs
 endef
 
 Package/shadowsocks-libev = $(Package/shadowsocks-libev/Default)
