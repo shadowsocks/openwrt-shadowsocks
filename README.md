@@ -51,6 +51,7 @@ Shadowsocks-libev for OpenWrt
      ./scripts/feeds install zlib libev libsodium libopenssl libmbedtls libpcre
    # 获取 shadowsocks-libev Makefile
    git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
+   git clone https://github.com/hqvv/openwrt-udns.git package/udns
    # 选择要编译的包 Network -> shadowsocks-libev
    make menuconfig
    # 开始编译
