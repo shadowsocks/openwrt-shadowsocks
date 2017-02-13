@@ -1,11 +1,11 @@
-From 13df793bce0a09769676455cc923410c1af04cc6 Mon Sep 17 00:00:00 2001
+From 4492b781ac52e9ff6e8266e5c1a729a838cb9135 Mon Sep 17 00:00:00 2001
 From: Jian Chang <aa65535@live.com>
 Date: Tue, 7 Feb 2017 20:53:44 +0800
 Subject: [PATCH] embed libudns
 
 ---
  Makefile.am             |    4 +-
- configure.ac            |    1 +
+ configure.ac            |    3 +-
  libudns/Makefile.am     |    8 +
  libudns/dnsget.1        |  195 +++++++
  libudns/dnsget.c        |  759 ++++++++++++++++++++++++++
@@ -33,7 +33,7 @@ Subject: [PATCH] embed libudns
  libudns/udns_rr_srv.c   |  155 ++++++
  libudns/udns_rr_txt.c   |   98 ++++
  src/Makefile.am         |   11 +-
- 29 files changed, 7605 insertions(+), 7 deletions(-)
+ 29 files changed, 7605 insertions(+), 9 deletions(-)
  create mode 100644 libudns/Makefile.am
  create mode 100644 libudns/dnsget.1
  create mode 100644 libudns/dnsget.c
@@ -76,23 +76,23 @@ index 06af285..8d6070e 100644
  
  if ENABLE_DOCUMENTATION
 diff --git a/configure.ac b/configure.ac
-index 008c2d2..ce5df55 100755
+index c816824..5ac1a6e 100755
 --- a/configure.ac
 +++ b/configure.ac
 @@ -277,13 +277,12 @@ dnl Add define for libudns to enable IPv6 support
  dnl This is an option defined in the origin configure script
  AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
-
+ 
 -AC_CHECK_HEADERS([udns.h], [], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
 -AC_CHECK_LIB([udns], [dns_dnlen], [LIBS="-ludns $LIBS"], [AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
  AC_CHECK_HEADERS([ev.h], [], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
  AC_CHECK_LIB([ev], [ev_loop_destroy], [LIBS="-lev $LIBS"], [AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
-
+ 
  AC_CONFIG_FILES([shadowsocks-libev.pc
                   Makefile
 +                 libudns/Makefile
                   src/Makefile])
-
+ 
  AM_COND_IF([USE_SYSTEM_SHARED_LIB],
 diff --git a/libudns/Makefile.am b/libudns/Makefile.am
 new file mode 100644
