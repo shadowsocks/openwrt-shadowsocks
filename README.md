@@ -43,12 +43,8 @@ Shadowsocks-libev for OpenWrt
    # 以 ar71xx 平台为例
    tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
    cd OpenWrt-SDK-ar71xx-*
-   # 安装 feeds
-   # 如果是 uClibc SDK (15.05.1 及以下)
-     git clone https://github.com/aa65535/openwrt-feeds.git package/feeds
-   # 如果是 musl SDK (trunk 或 LEDE)
-     ./scripts/feeds update base packages
-     ./scripts/feeds install zlib libev libsodium libopenssl libmbedtls libpcre
+   # 添加 feeds
+   git clone https://github.com/shadowsocks/openwrt-feeds.git package/feeds
    # 获取 shadowsocks-libev Makefile
    git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
    # 选择要编译的包 Network -> shadowsocks-libev
