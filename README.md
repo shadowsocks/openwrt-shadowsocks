@@ -43,7 +43,10 @@ Shadowsocks-libev for OpenWrt
    # 以 ar71xx 平台为例
    tar xjf OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.8-linaro_uClibc-0.9.33.2.tar.bz2
    cd OpenWrt-SDK-ar71xx-*
-   # 添加 feeds
+   # 获取 openwrt feeds
+   ./scripts/feeds update -a
+   ./scripts/feeds install -a
+   # 添加 shadowsocks feeds
    git clone https://github.com/shadowsocks/openwrt-feeds.git package/feeds
    # 获取 shadowsocks-libev Makefile
    git clone https://github.com/shadowsocks/openwrt-shadowsocks.git package/shadowsocks-libev
