@@ -77,8 +77,8 @@ Shadowsocks-libev for OpenWrt
 
 
   [1]: https://github.com/shadowsocks/shadowsocks-libev
-  [2]: https://bintray.com/aa65535/opkg/shadowsocks-libev/_latestVersion "预编译 IPK 下载"
-  [B]: https://api.bintray.com/packages/aa65535/opkg/shadowsocks-libev/images/download.svg
+  [2]: https://github.com/shadowsocks/openwrt-shadowsocks/releases/latest
+  [B]: https://img.shields.io/github/release/shadowsocks/openwrt-shadowsocks.svg
   [3]: https://github.com/shadowsocks/luci-app-shadowsocks
   [A]: https://shadowsocks.org/en/spec/one-time-auth.html
   [E]: https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Encrypt-method
