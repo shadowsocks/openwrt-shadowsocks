@@ -35,15 +35,24 @@ define Package/shadowsocks-libev/Default
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	VARIANT:=$(1)
-	DEPENDS:=$(2)
 endef
 
-Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,shared,+zlib +libpthread +libev +libcares +libpcre +libsodium +libmbedtls)
-Package/shadowsocks-libev-server = $(call Package/shadowsocks-libev/Default,shared,+zlib +libpthread +libev +libcares +libpcre +libsodium +libmbedtls)
+define Package/shadowsocks-libev
+	$(call Package/shadowsocks-libev/Default)
+	VARIANT:=shared
+	DEPENDS:=+zlib +libpthread +libev +libcares +libpcre +libsodium +libmbedtls
+endef
 
-Package/shadowsocks-libev-static = $(call Package/shadowsocks-libev/Default,static,+zlib +libpthread)
-Package/shadowsocks-libev-server-static = $(call Package/shadowsocks-libev/Default,static,+zlib +libpthread)
+Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
+
+define Package/shadowsocks-libev-static
+	$(call Package/shadowsocks-libev/Default)
+	VARIANT:=static
+	DEPENDS:=+zlib +libpthread
+	PKG_BUILD_DEPENDS:=+libev +libcares +libpcre +libsodium +libmbedtls
+endef
+
+Package/shadowsocks-libev-server-static = $(Package/shadowsocks-libev-static)
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured socks5 proxy for embedded devices and low end boxes.
