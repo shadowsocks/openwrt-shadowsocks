@@ -27,6 +27,15 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_USE_MIPS16:=0
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_DEPENDS:=libev libpcre libcares libsodium libmbedtls
+
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_SHADOWSOCKS_STATIC_LINK \
+	CONFIG_SHADOWSOCKS_WITH_EV \
+	CONFIG_SHADOWSOCKS_WITH_PCRE \
+	CONFIG_SHADOWSOCKS_WITH_CARES \
+	CONFIG_SHADOWSOCKS_WITH_SODIUM \
+	CONFIG_SHADOWSOCKS_WITH_MBEDTLS
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -35,8 +44,12 @@ define Package/shadowsocks-libev
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	DEPENDS:=+zlib +libpthread +!SHADOWSOCKS_WITH_EV:libev +!SHADOWSOCKS_WITH_CARES:libcares +!SHADOWSOCKS_WITH_PCRE:libpcre +!SHADOWSOCKS_WITH_SODIUM:libsodium +!SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
-	PKG_BUILD_DEPENDS:=+SHADOWSOCKS_WITH_EV:libev +SHADOWSOCKS_WITH_CARES:libcares +SHADOWSOCKS_WITH_PCRE:libpcre +SHADOWSOCKS_WITH_SODIUM:libsodium +SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
+	DEPENDS:=+zlib +libpthread \
+		+!SHADOWSOCKS_WITH_EV:libev \
+		+!SHADOWSOCKS_WITH_PCRE:libpcre \
+		+!SHADOWSOCKS_WITH_CARES:libcares \
+		+!SHADOWSOCKS_WITH_SODIUM:libsodium \
+		+!SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
 endef
 
 Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
