@@ -35,8 +35,8 @@ define Package/shadowsocks-libev
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	DEPENDS:=+zlib +libpthread +!WITH_EV:libev +!WITH_CARES:libcares +!WITH_PCRE:libpcre +!WITH_SODIUM:libsodium +!WITH_MBEDTLS:libmbedtls
-	PKG_BUILD_DEPENDS:=+WITH_EV:libev +WITH_CARES:libcares +WITH_PCRE:libpcre +WITH_SODIUM:libsodium +WITH_MBEDTLS:libmbedtls
+	DEPENDS:=+zlib +libpthread +!SHADOWSOCKS_WITH_EV:libev +!SHADOWSOCKS_WITH_CARES:libcares +!SHADOWSOCKS_WITH_PCRE:libpcre +!SHADOWSOCKS_WITH_SODIUM:libsodium +!SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
+	PKG_BUILD_DEPENDS:=+SHADOWSOCKS_WITH_EV:libev +SHADOWSOCKS_WITH_CARES:libcares +SHADOWSOCKS_WITH_PCRE:libpcre +SHADOWSOCKS_WITH_SODIUM:libsodium +SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
 endef
 
 Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
@@ -44,29 +44,29 @@ Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
 define Package/shadowsocks-libev-server/config
 menu "Shadowsocks-libev Compile Configuration"
 	depends on PACKAGE_shadowsocks-libev || PACKAGE_shadowsocks-libev-server
-	config STATIC_LINK
+	config SHADOWSOCKS_STATIC_LINK
 		bool "enable static link libraries."
 		default n
 
 		menu "Select libraries"
-			depends on STATIC_LINK
-			config WITH_EV
+			depends on SHADOWSOCKS_STATIC_LINK
+			config SHADOWSOCKS_WITH_EV
 				bool "static link libev."
 				default y
 
-			config WITH_PCRE
+			config SHADOWSOCKS_WITH_PCRE
 				bool "static link libpcre."
 				default y
 
-			config WITH_CARES
+			config SHADOWSOCKS_WITH_CARES
 				bool "static link libcares."
 				default y
 
-			config WITH_SODIUM
+			config SHADOWSOCKS_WITH_SODIUM
 				bool "static link libsodium."
 				default y
 
-			config WITH_MBEDTLS
+			config SHADOWSOCKS_WITH_MBEDTLS
 				bool "static link libmbedtls."
 				default y
 		endmenu
@@ -84,20 +84,20 @@ CONFIGURE_ARGS += \
 	--disable-documentation \
 	--disable-assert
 
-ifeq ($(CONFIG_STATIC_LINK),y)
-	ifeq ($(CONFIG_WITH_EV),y)
+ifeq ($(CONFIG_SHADOWSOCKS_STATIC_LINK),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_EV),y)
 		CONFIGURE_ARGS += --with-ev="$(STAGING_DIR)/usr"
 	endif
-	ifeq ($(CONFIG_WITH_PCRE),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_PCRE),y)
 		CONFIGURE_ARGS += --with-pcre="$(STAGING_DIR)/usr"
 	endif
-	ifeq ($(CONFIG_WITH_CARES),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_CARES),y)
 		CONFIGURE_ARGS += --with-cares="$(STAGING_DIR)/usr"
 	endif
-	ifeq ($(CONFIG_WITH_SODIUM),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_SODIUM),y)
 		CONFIGURE_ARGS += --with-sodium="$(STAGING_DIR)/usr"
 	endif
-	ifeq ($(CONFIG_WITH_MBEDTLS),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_MBEDTLS),y)
 		CONFIGURE_ARGS += --with-mbedtls="$(STAGING_DIR)/usr"
 	endif
 	CONFIGURE_ARGS += LDFLAGS="-Wl,-static -static -static-libgcc"
