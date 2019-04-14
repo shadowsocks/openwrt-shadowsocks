@@ -69,7 +69,7 @@ Shadowsocks-libev for OpenWrt
    timeout        | 整数值   | 超时时间（秒）, 默认 60
    plugin         | 字符串   | 插件名称, eg: `obfs-local`
    plugin_opts    | 字符串   | 插件参数, eg: `obfs=http;obfs-host=www.bing.com`
-   fast_open      | 布尔值   | 是否启用 [TCP Fast Open][F], `ss-tunnel` 下不可用
+   fast_open      | 布尔值   | 是否启用 [TCP Fast Open][F]
    nofile         | 整数值   | 设置 Linux ulimit
    mode           | 枚举值   | 转发模式, 可用值: [`tcp_only`, `udp_only`, `tcp_and_udp`]
    mptcp          | 布尔值   | 是否启用 [Multipath TCP][M]
