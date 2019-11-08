@@ -27,7 +27,7 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_USE_MIPS16:=0
 PKG_BUILD_PARALLEL:=1
-PKG_BUILD_DEPENDS:=libev libpcre libcares libsodium libmbedtls
+PKG_BUILD_DEPENDS:=c-ares libev libsodium mbedtls pcre
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_SHADOWSOCKS_STATIC_LINK \
