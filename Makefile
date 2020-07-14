@@ -1,6 +1,5 @@
 #
-# Copyright (C) 2016 OpenWrt-dist
-# Copyright (C) 2016 Jian Chang <aa65535@live.com>
+# Copyright (C) 2014-2020 Jian Chang <aa65535@live.com>
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -9,85 +8,123 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocks-libev
-PKG_VERSION:=2.4.8
-PKG_RELEASE:=2
+PKG_VERSION:=3.3.4
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/shadowsocks/openwrt-shadowsocks/releases/download/v$(PKG_VERSION)
-PKG_MD5SUM:=e28c594bdb370e1554f78df3102d7cda
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/shadowsocks/shadowsocks-libev.git
+PKG_SOURCE_VERSION:=72d7d9217ce2a8a59dc647e8f1fbbd77f7cd30aa
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.xz
 
 PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
-PKG_MAINTAINER:=Max Lv <max.c.lv@gmail.com>
+PKG_MAINTAINER:=Jian Chang <aa65535@live.com>
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION)
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_USE_MIPS16:=0
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_DEPENDS:=c-ares libev libsodium mbedtls pcre
+
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_SHADOWSOCKS_STATIC_LINK \
+	CONFIG_SHADOWSOCKS_WITH_EV \
+	CONFIG_SHADOWSOCKS_WITH_PCRE \
+	CONFIG_SHADOWSOCKS_WITH_CARES \
+	CONFIG_SHADOWSOCKS_WITH_SODIUM \
+	CONFIG_SHADOWSOCKS_WITH_MBEDTLS
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/shadowsocks-libev/Default
+define Package/shadowsocks-libev
 	SECTION:=net
 	CATEGORY:=Network
 	TITLE:=Lightweight Secured Socks5 Proxy
 	URL:=https://github.com/shadowsocks/shadowsocks-libev
-	DEPENDS:=$(1)
+	DEPENDS:=+libpthread \
+		+!SHADOWSOCKS_WITH_EV:libev \
+		+!SHADOWSOCKS_WITH_PCRE:libpcre \
+		+!SHADOWSOCKS_WITH_CARES:libcares \
+		+!SHADOWSOCKS_WITH_SODIUM:libsodium \
+		+!SHADOWSOCKS_WITH_MBEDTLS:libmbedtls
 endef
 
-Package/shadowsocks-libev = $(call Package/shadowsocks-libev/Default,+libopenssl +libpthread)
-Package/shadowsocks-libev-spec = $(call Package/shadowsocks-libev/Default,+libopenssl +libpthread +ipset +ip)
+Package/shadowsocks-libev-server = $(Package/shadowsocks-libev)
+
+define Package/shadowsocks-libev-server/config
+menu "Shadowsocks-libev Compile Configuration"
+	depends on PACKAGE_shadowsocks-libev || PACKAGE_shadowsocks-libev-server
+	config SHADOWSOCKS_STATIC_LINK
+		bool "enable static link libraries."
+		default n
+
+		menu "Select libraries"
+			depends on SHADOWSOCKS_STATIC_LINK
+			config SHADOWSOCKS_WITH_EV
+				bool "static link libev."
+				default y
+
+			config SHADOWSOCKS_WITH_PCRE
+				bool "static link libpcre."
+				default y
+
+			config SHADOWSOCKS_WITH_CARES
+				bool "static link libcares."
+				default y
+
+			config SHADOWSOCKS_WITH_SODIUM
+				bool "static link libsodium."
+				default y
+
+			config SHADOWSOCKS_WITH_MBEDTLS
+				bool "static link libmbedtls."
+				default y
+		endmenu
+endmenu
+endef
 
 define Package/shadowsocks-libev/description
 Shadowsocks-libev is a lightweight secured socks5 proxy for embedded devices and low end boxes.
 endef
 
-Package/shadowsocks-libev-spec/description = $(Package/shadowsocks-libev/description)
+Package/shadowsocks-libev-server/description = $(Package/shadowsocks-libev/description)
 
-define Package/shadowsocks-libev/conffiles
-/etc/shadowsocks.json
-endef
+CONFIGURE_ARGS += \
+	--disable-ssp \
+	--disable-documentation \
+	--disable-assert
 
-define Package/shadowsocks-libev-spec/conffiles
-/etc/config/shadowsocks
-endef
-
-define Package/shadowsocks-libev-spec/postinst
-#!/bin/sh
-if [ -z "$${IPKG_INSTROOT}" ]; then
-	uci -q batch <<-EOF >/dev/null
-		delete firewall.shadowsocks
-		set firewall.shadowsocks=include
-		set firewall.shadowsocks.type=script
-		set firewall.shadowsocks.path=/var/etc/shadowsocks.include
-		set firewall.shadowsocks.reload=1
-		commit firewall
-EOF
-fi
-exit 0
-endef
-
-CONFIGURE_ARGS += --disable-ssp --disable-documentation
+ifeq ($(CONFIG_SHADOWSOCKS_STATIC_LINK),y)
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_EV),y)
+		CONFIGURE_ARGS += --with-ev="$(STAGING_DIR)/usr"
+	endif
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_PCRE),y)
+		CONFIGURE_ARGS += --with-pcre="$(STAGING_DIR)/usr"
+	endif
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_CARES),y)
+		CONFIGURE_ARGS += --with-cares="$(STAGING_DIR)/usr"
+	endif
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_SODIUM),y)
+		CONFIGURE_ARGS += --with-sodium="$(STAGING_DIR)/usr"
+	endif
+	ifeq ($(CONFIG_SHADOWSOCKS_WITH_MBEDTLS),y)
+		CONFIGURE_ARGS += --with-mbedtls="$(STAGING_DIR)/usr"
+	endif
+	CONFIGURE_ARGS += LDFLAGS="-Wl,-static -static -static-libgcc"
+endif
 
 define Package/shadowsocks-libev/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-{local,redir,tunnel} $(1)/usr/bin
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_CONF) ./files/shadowsocks.conf $(1)/etc/shadowsocks.json
-	$(INSTALL_BIN) ./files/shadowsocks.init $(1)/etc/init.d/shadowsocks
 endef
 
-define Package/shadowsocks-libev-spec/install
+define Package/shadowsocks-libev-server/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-{redir,tunnel} $(1)/usr/bin
-	$(INSTALL_BIN) ./files/shadowsocks.rule $(1)/usr/bin/ss-rules
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DATA) ./files/shadowsocks.config $(1)/etc/config/shadowsocks
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/shadowsocks.spec $(1)/etc/init.d/shadowsocks
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-server $(1)/usr/bin
 endef
 
 $(eval $(call BuildPackage,shadowsocks-libev))
-$(eval $(call BuildPackage,shadowsocks-libev-spec))
+$(eval $(call BuildPackage,shadowsocks-libev-server))
